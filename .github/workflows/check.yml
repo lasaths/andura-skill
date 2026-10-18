@@ -1,0 +1,27 @@
+name: check
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install pillow
+      - name: Tokens, references, bans, versions
+        run: python3 scripts/check.py
+      - name: Exports are up to date
+        run: python3 scripts/export_tokens.py && git diff --exit-code tokens/build
+      - name: Example touch targets and persistence
+        run: python3 scripts/touch_check.py && python3 scripts/persist_check.py
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - name: TypeScript export compiles
+        run: npx -y -p typescript@5 tsc --noEmit --strict --target es2020 tokens/build/andura.ts
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: "8.0.x" }
+      - name: C# export compiles
+        run: |
+          mkdir -p /tmp/cs
+          printf '%s\n' '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><Nullable>enable</Nullable><TreatWarningsAsErrors>true</TreatWarningsAsErrors><EnableDefaultCompileItems>false</EnableDefaultCompileItems></PropertyGroup>' "<ItemGroup><Compile Include=\"$GITHUB_WORKSPACE/tokens/build/Andura.cs\" /></ItemGroup></Project>" > /tmp/cs/Andura.csproj
+          dotnet build /tmp/cs/Andura.csproj -nologo

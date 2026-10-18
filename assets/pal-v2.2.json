@@ -1,0 +1,215 @@
+{
+ "rows": [
+  {
+   "name": "Void",
+   "oklch": "oklch(0.000 0.000 0)",
+   "hex": "#000000",
+   "role": "Outer canvas (pure black)",
+   "group": "base",
+   "cr_text": 15.05,
+   "cr_void": 1.0,
+   "cr_surface": 1.06
+  },
+  {
+   "name": "Surface",
+   "oklch": "oklch(0.145 0.004 272)",
+   "hex": "#090a0c",
+   "role": "Panels, cards, popovers (only layer)",
+   "group": "base",
+   "cr_text": 14.2,
+   "cr_void": 1.06,
+   "cr_surface": 1.0
+  },
+  {
+   "name": "Line",
+   "oklch": "oklch(0.360 0.007 272)",
+   "hex": "#3c3d41",
+   "role": "Hairlines, grid, borders, panel edges",
+   "group": "base",
+   "cr_text": 7.78,
+   "cr_void": 1.94,
+   "cr_surface": 1.83
+  },
+  {
+   "name": "Muted",
+   "oklch": "oklch(0.640 0.008 272)",
+   "hex": "#8a8c91",
+   "role": "Labels, units, secondary text; stale data (+hatch +age)",
+   "group": "base",
+   "cr_text": 2.41,
+   "cr_void": 6.24,
+   "cr_surface": 5.89
+  },
+  {
+   "name": "Text",
+   "oklch": "oklch(0.890 0.004 272)",
+   "hex": "#dadadd",
+   "role": "Primary text and values; actual (solid)",
+   "group": "base",
+   "cr_text": 1.0,
+   "cr_void": 15.05,
+   "cr_surface": 14.2
+  },
+  {
+   "name": "Ultramarine",
+   "oklch": "oklch(0.510 0.274 271)",
+   "hex": "#3a3cff",
+   "role": "Accent: fills, outlines, selection, 3D selection, commanded (dashed), button bg (Text on top)",
+   "group": "accent",
+   "cr_text": 4.6,
+   "cr_void": 3.27,
+   "cr_surface": 3.08
+  },
+  {
+   "name": "Ultramarine Text",
+   "oklch": "oklch(0.605 0.190 271)",
+   "hex": "#5a74f1",
+   "role": "Accent text/links only; also the 2px focus ring",
+   "group": "accent",
+   "cr_text": 2.89,
+   "cr_void": 5.2,
+   "cr_surface": 4.91
+  },
+  {
+   "name": "Emergency",
+   "oklch": "oklch(0.660 0.200 33)",
+   "hex": "#f45536",
+   "role": "P1 warning/emergency, E-stop, collision; invalid (+glyph)",
+   "group": "status",
+   "cr_text": 2.43,
+   "cr_void": 6.2,
+   "cr_surface": 5.85
+  },
+  {
+   "name": "Caution",
+   "oklch": "oklch(0.820 0.155 78)",
+   "hex": "#fbb636",
+   "role": "P2 caution, limit approach",
+   "group": "status",
+   "cr_text": 1.27,
+   "cr_void": 11.85,
+   "cr_surface": 11.17
+  },
+  {
+   "name": "Nominal",
+   "oklch": "oklch(0.700 0.130 160)",
+   "hex": "#44b782",
+   "role": "Sparing: completed/verified only",
+   "group": "status",
+   "cr_text": 1.8,
+   "cr_void": 8.34,
+   "cr_surface": 7.87
+  }
+ ],
+ "cvd": {
+  "normal": {
+   "Ultramarine/Ultramarine Text": 15.0,
+   "Ultramarine/Emergency": 71.3,
+   "Ultramarine/Caution": 79.4,
+   "Ultramarine/Nominal": 57.9,
+   "Ultramarine/Muted": 40.0,
+   "Ultramarine Text/Emergency": 63.2,
+   "Ultramarine Text/Caution": 68.1,
+   "Ultramarine Text/Nominal": 48.0,
+   "Ultramarine Text/Muted": 29.7,
+   "Emergency/Caution": 31.0,
+   "Emergency/Nominal": 54.9,
+   "Emergency/Muted": 39.8,
+   "Caution/Nominal": 38.6,
+   "Caution/Muted": 39.6,
+   "Nominal/Muted": 26.2
+  },
+  "normal_hex": {
+   "Ultramarine": "#3a3cff",
+   "Ultramarine Text": "#5a74f1",
+   "Emergency": "#f45536",
+   "Caution": "#fbb636",
+   "Nominal": "#44b782",
+   "Muted": "#8a8c91"
+  },
+  "protan": {
+   "Ultramarine/Ultramarine Text": 9.2,
+   "Ultramarine/Emergency": 55.9,
+   "Ultramarine/Caution": 72.4,
+   "Ultramarine/Nominal": 54.6,
+   "Ultramarine/Muted": 35.3,
+   "Ultramarine Text/Emergency": 52.3,
+   "Ultramarine Text/Caution": 65.9,
+   "Ultramarine Text/Nominal": 48.1,
+   "Ultramarine Text/Muted": 30.0,
+   "Emergency/Caution": 28.0,
+   "Emergency/Nominal": 21.6,
+   "Emergency/Muted": 24.9,
+   "Caution/Nominal": 18.7,
+   "Caution/Muted": 37.9,
+   "Nominal/Muted": 19.9
+  },
+  "protan_hex": {
+   "Ultramarine": "#0068ff",
+   "Ultramarine Text": "#2685f5",
+   "Emergency": "#837531",
+   "Caution": "#d0b81d",
+   "Nominal": "#b5aa7f",
+   "Muted": "#8b8c91"
+  },
+  "deutan": {
+   "Ultramarine/Ultramarine Text": 10.0,
+   "Ultramarine/Emergency": 66.1,
+   "Ultramarine/Caution": 77.4,
+   "Ultramarine/Nominal": 52.0,
+   "Ultramarine/Muted": 38.1,
+   "Ultramarine Text/Emergency": 59.8,
+   "Ultramarine Text/Caution": 69.7,
+   "Ultramarine Text/Nominal": 45.0,
+   "Ultramarine Text/Muted": 31.6,
+   "Emergency/Caution": 18.0,
+   "Emergency/Nominal": 17.2,
+   "Emergency/Muted": 29.3,
+   "Caution/Nominal": 26.0,
+   "Caution/Muted": 40.0,
+   "Nominal/Muted": 14.1
+  },
+  "deutan_hex": {
+   "Ultramarine": "#0054fc",
+   "Ultramarine Text": "#0078ee",
+   "Emergency": "#aa982f",
+   "Caution": "#e0c93b",
+   "Nominal": "#a59f85",
+   "Muted": "#8a8c91"
+  },
+  "tritan": {
+   "Ultramarine/Ultramarine Text": 10.3,
+   "Ultramarine/Emergency": 65.4,
+   "Ultramarine/Caution": 55.1,
+   "Ultramarine/Nominal": 26.4,
+   "Ultramarine/Muted": 25.1,
+   "Ultramarine Text/Emergency": 65.4,
+   "Ultramarine Text/Caution": 51.1,
+   "Ultramarine Text/Nominal": 16.3,
+   "Ultramarine Text/Muted": 21.5,
+   "Emergency/Caution": 27.4,
+   "Emergency/Nominal": 66.6,
+   "Emergency/Muted": 44.7,
+   "Caution/Nominal": 47.5,
+   "Caution/Muted": 31.1,
+   "Nominal/Muted": 23.2
+  },
+  "tritan_hex": {
+   "Ultramarine": "#00789d",
+   "Ultramarine Text": "#0091a7",
+   "Emergency": "#ff264f",
+   "Caution": "#ffa39d",
+   "Nominal": "#00b6a9",
+   "Muted": "#898d8e"
+  }
+ },
+ "seq": [
+  "#163770",
+  "#47516c",
+  "#696b71",
+  "#8b8778",
+  "#afa471",
+  "#d7c45c",
+  "#fee838"
+ ]
+}
