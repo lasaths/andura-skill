@@ -2,7 +2,7 @@
  "$description": "ANDURA design tokens, single source of truth (W3C Design Tokens Community Group format). px = dp = CSS px at 1x. Generated exports: scripts/export_tokens.py.",
  "$extensions": {
   "andura": {
-   "version": "0.3.1-draft"
+   "version": "0.3.2-draft"
   }
  },
  "color": {

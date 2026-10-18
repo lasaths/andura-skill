@@ -1,7 +1,7 @@
 ---
 name: andura
 description: Use when designing, building or reviewing dark-mode operator UI for mission-critical 3D digital twins - HMI and SCADA screens, operator consoles, alarm screens, robot cell monitoring, BIM/digital-twin viewers, design-to-fabrication tracking and production analytics - on desktop, tablet, phone or control-room wall, on any platform (web, desktop, mobile, Unity, Three.js). Not for consumer apps, light themes or marketing pages.
-version: 0.3.1-draft
+version: 0.3.2-draft
 license: MIT
 allowed-tools: [Read, Write, Edit, Glob, Grep, Shell]
 ---
@@ -151,5 +151,6 @@ To check your own screen, point the two render checks at it with the same `.hit`
 | `references/motion.md` | motion tokens, behaviours, reduced motion, forbidden motion |
 | `references/colour.md` · `typography.md` | palette derivation, CVD, focus vs selection · scale tests, wall sizing |
 | `references/platforms.md` | consuming tokens in CSS, TS, Python, C#/WPF, Unity, Three.js |
+| `references/libraries.md` | picking a component library (Radix, React Aria, WPF, Qt, …) and adapting it to the tokens |
 | `references/principles.md` · `research.md` | sources and audits for the 13 rules · research brief |
 | `assets/` | rendered specimens (`swatch-v2.2.png`, `sheet-min.png`, `components.png`, …) |

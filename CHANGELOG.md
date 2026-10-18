@@ -4,6 +4,10 @@ ANDURA uses semantic versioning. The version lives in `tokens/andura.tokens.json
 
 **Breaking change** (bump the major version; while in `0.x`, bump the minor): a changed or removed token value or name, a renamed or renumbered rule (hard rules 1–10, rules 1–13), a changed breakpoint or chrome size, or a removed reference file. Adding tokens, references, checks or examples is not breaking.
 
+## [0.3.2-draft] - 2026-10-18
+- New `references/libraries.md`: pick a component library per platform and adapt it to the tokens (workflow, pick list, criteria, override checklist, mapping, gate).
+- README cut to a short human overview; depth lives in `SKILL.md` and `references/`.
+
 ## [0.3.1-draft] - 2026-10-18
 - Worked example now covers phone (390 × 844: tab bar, 64 px one-row band, 3D thumbnail) and `?state=inspect` (KR-02 selected, detail column).
 - OS text scaling (WCAG 1.4.4): tokens `text-scale.100|125|150|200`; rules in `SKILL.md` §5, `references/layouts.md`, `typography.md`, `interaction.md`; `?scale=` in the example.
