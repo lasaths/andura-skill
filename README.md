@@ -4,7 +4,7 @@
 
 **A dark-mode design system and agent skill for mission-critical 3D digital-twin dashboards.**
 
-*Andura* (අඳුර) is Sinhala for "darkness". The UI is dark by default, grey when everything is normal, and colours only what needs attention.
+The UI is dark by default, grey when everything is normal, and colours only what needs attention.
 
 `version 0.3.1-draft` · tokens in W3C Design Tokens format · works on any platform · [MIT License](LICENSE)
 
