@@ -1,6 +1,6 @@
 # ANDURA — Research Brief
 *Dark-mode design guideline for 3D digital-twin dashboards in robotic construction (live robot monitoring, design→fabrication data lineage, analytics)*
-Compiled 2026-10-17. Base skill: `/home/box/agent-data/workflows/nothing-design/` (SKILL.md + references/tokens.md, components.md, platform-mapping.md).
+Compiled 2026-10-17. Base skill: the `nothing-design` skill (SKILL.md + references/tokens.md, components.md, platform-mapping.md).
 
 > **How to read the citations.** Every external claim has a URL. Where a source was only seen as a search excerpt or summary and not read in full, it is marked **[excerpt]**. Treat those as leads to check before you rely on them for anything normative. Paywalled standards (ISA-101, ISA-18.2, EEMUA 191, ISO 10218, MIL-STD-1472) are cited through the publisher's preview or overview, or through practitioner summaries, and not from the full text. Sections 3–5 are ANDURA design rules **derived** from those sources. Each rule names the source it comes from. Where a rule is a design choice and not a sourced fact, it says so (*design choice*).
 
