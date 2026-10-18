@@ -1,0 +1,104 @@
+<!doctype html>
+<!-- ANDURA reference screen: L5 "alarm list + detail". Which alarm came first, and what do I do about it?
+     Tokens only (../tokens/build/andura.css); shared chrome and recipes: andura-ui.css / andura-ui.js (references/recipes.md).
+     ?state=alarm (default, P1 selected) | normal | inspect (P2 selected) | detail (P1; phone: detail screen) | flood (23 alarms in 10 min; shelving, suppression)   ?scale=1 (default) | 1.25 | 1.5 | 2   Classes: desktop 1600 x 1000, tablet 1180 x 820, phone 390 x 844.
+     Spec: l5-alarms.md -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="andura-states" content="alarm normal inspect detail flood">
+<title>ANDURA · L5 example</title>
+<link rel="stylesheet" href="../tokens/build/andura.css">
+<link rel="stylesheet" href="../tokens/build/andura-fonts.css">
+<link rel="stylesheet" href="andura-ui.css">
+<style>/* L5 alarm list + detail: first-out list grouped by cell, the selected alarm's detail on the right. The list is the alarm view;
+   no band: the list is the alarm view (layouts.md, L5). alarm = P1 selected; inspect = P2 selected; detail = P1 (phone: detail screen). */
+main.l5{padding:0 0 0 var(--m)}
+.content{flex:1;display:flex;flex-direction:column;gap:var(--andura-space-8);padding-top:var(--andura-space-24);min-width:0;overflow-y:auto}
+.grp{gap:var(--andura-space-16);min-height:calc(var(--list-row) * var(--s))} .sub{margin-top:var(--sect)}
+.list .hit{padding:0 var(--andura-space-8)}
+body[data-alarms] .sel-p1,body[data-state=detail] .sel-p1,body[data-state=inspect] .sel-p2{border-left-color:var(--andura-color-ultramarine)}
+body[data-alarms] .pane,body[data-state=inspect] .pane{display:flex}
+body[data-alarms] .pane .detail-only{display:flex!important}
+body[data-state=inspect] .alarm-only{display:flex!important}
+body[data-state=inspect] .tabs .badge{visibility:visible}
+body[data-state=inspect] .rim-em{stroke:var(--andura-color-emergency)}
+body[data-state=inspect] aside{padding-top:var(--andura-space-24)}
+@media (max-width:599px){main.l5{padding:0} .content{padding:var(--andura-space-16) var(--m)}
+ body[data-alarms] .pane{display:none} body[data-state=inspect] .content{display:none}}
+@media (max-width:599px){body[data-state=detail] .content{display:none} .content{padding-bottom:var(--andura-space-16)}}</style>
+</head>
+<body data-state="alarm">
+<script src="andura-ui.js"></script>
+
+<header class="top">
+ <span class="brand"><svg class="mark" viewBox="0 0 32 32" role="img" aria-label="ANDURA"><title>ANDURA</title><path d="M3 29 16 3l13 26h-7.5L16 17.5 10.5 29Z M13.5 29 16 24l2.5 5Z" style="fill:currentColor"/></svg><!-- client logo slot: <img class="client-logo" src="…" alt="Client"> --></span><span class="h1 trunc" title="Cell C3 · Alarms">Cell C3 · Alarms</span>
+ <span class="facts"><span class="label phone-hide">CONTROL <span class="text">M. KELLER</span></span><span class="label phone-hide live"><span class="fresh">DATA <span class="text">0.3 <span class="unit">s</span></span></span><span class="lost cm"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" style="fill:none;stroke:var(--andura-color-muted);stroke-dasharray:3 2"/></svg><span class="text">COMMS LOST · AGE 0:42</span></span><span class="lost em">DATA <span class="text">CONNECTING</span></span></span><span class="label text value">09:56 CEST</span></span>
+</header>
+
+
+
+<main class="l5">
+ <div class="content">
+  <div class="row grp"><span class="label text">CELL C3</span><span class="label only alarm-only not-flood">2 ACTIVE · FIRST OUT KR-03</span><span class="label only flood-only">2 ACTIVE · FIRST OUT KR-03 · 21 SHELVED OR SUPPRESSED</span><span class="label only normal-only">NO ACTIVE ALARMS</span></div>
+  <div class="list">
+   <a class="hit only alarm-only sel-p1" href="?state=detail"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 0h6l5 5v6l-5 5H5l-5-5V5z" style="fill:var(--andura-color-emergency)"/><path d="M7 3h2v6H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="label text value">P1 EMERGENCY</span><span class="trunc">KR-03 protective stop · J5 force 412 N, limit 380 N</span><span class="label value tab-hide">09:54:12</span><span class="label value ack-state">UNACK</span><span class="chev label">›</span></a>
+   <a class="hit only alarm-only sel-p2" href="?state=inspect"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0l8 15H0z" style="fill:var(--andura-color-caution)"/><path d="M7 5h2v5H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="label text value">P2 CAUTION</span><span class="trunc muted">KR-01 nailer magazine 14 % · ~6 min left</span><span class="label value tab-hide">09:51:40</span><span class="label value">ACKED</span><span class="chev label">›</span></a>
+  </div>
+  <div class="only flood-only" style="flex-direction:column;gap:var(--andura-space-8)">
+  <div class="flood row vals"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" style="fill:var(--andura-color-text)"/><path d="M7 7h2v6H7zM7 3h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="label text value">ALARM FLOOD</span><span class="label value">23 IN 10 MIN</span><span class="label value">· LIMIT 10 / 10 MIN</span></div>
+  <span class="label sub">SUPPRESSED BY DESIGN · 6</span>
+  <div class="list"><a class="hit" href="#suppressed"><span class="glyph"></span><span class="trunc muted">Consequences of the KR-03 stop: infeed, conveyor, KR-02 wait states</span><span class="label value">6</span><span class="chev label">›</span></a></div>
+  <span class="label sub">SHELVED · 15</span>
+  <div class="list">
+   <a class="hit shelved" href="#s1"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" style="fill:var(--andura-color-text)"/><path d="M7 7h2v6H7zM7 3h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="label value">P3</span><span class="trunc muted">KR-01 infeed sensor chatter</span><span class="label value shelf">0:28 LEFT</span><span class="chev label">›</span></a>
+   <a class="hit shelved" href="#s2"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" style="fill:var(--andura-color-text)"/><path d="M7 7h2v6H7zM7 3h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="label value">P3</span><span class="trunc muted">Saw dust extraction pressure low</span><span class="label value shelf">0:52 LEFT</span><span class="chev label">›</span></a>
+   <a class="hit" href="#shelved"><span class="glyph"></span><span class="trunc muted">13 more shelved, by M. KELLER</span><span class="chev label">›</span></a>
+  </div>
+  </div>
+  <span class="label sub not-flood">CLEARED · LAST 2 H</span>
+  <div class="list">
+   <a class="hit not-flood" href="#c1"><span class="glyph"></span><span class="label value">P2</span><span class="trunc muted">KR-02 path DEV over limit</span><span class="label value">08:12–08:15</span><span class="chev label">›</span></a>
+   <a class="hit not-flood" href="#c2"><span class="glyph"></span><span class="label value">P3</span><span class="trunc muted">Rack B stud stock below 200</span><span class="label value">07:40–07:58</span><span class="chev label">›</span></a>
+  </div>
+ </div>
+ <aside class="pane">
+  <!-- alarm detail: P1 KR-03 (phone: the screen the band opens) -->
+  <div class="only detail-only detail">
+   <a class="back hit" href="?state=alarm"><span class="label text">‹ ALL ALARMS · 2</span><span class="label keycap phone-hide">ESC</span></a>
+   <div class="row" style="margin-top:var(--andura-space-16);flex-wrap:wrap"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 0h6l5 5v6l-5 5H5l-5-5V5z" style="fill:var(--andura-color-emergency)"/><path d="M7 3h2v6H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="label text value">P1 EMERGENCY</span><span class="label value ack-state">09:54:12 · UNACK</span></div>
+   <span class="title trunc">KR-03 protective stop</span>
+   <div class="param"><span class="label">J5 FORCE</span>
+    <div class="row" style="align-items:baseline;margin-top:var(--andura-space-8);flex-wrap:wrap"><span class="value vm">412</span><span class="muted value">N</span><span class="label value" style="margin-left:auto">LIMIT 380 <span class="unit">N</span></span></div></div>
+   <span class="muted">Cell C3 stopped KR-03 only. Clear the fixture, then acknowledge and reset at the pendant.</span>
+   <div class="acts">
+    <button class="btn hit">PROCEDURE SP-114</button>
+    <button class="btn pri hit confirm-ack" onclick="confirmAck()">ACKNOWLEDGE</button>
+    <button class="btn hit hold" aria-label="Press and hold 1.5 seconds to acknowledge P1 KR-03"><span class="fill"></span><span>HOLD TO ACKNOWLEDGE</span></button>
+   </div>
+  </div>
+   <div class="only inspect-only detail">
+   <a class="back hit" href="?state=alarm"><span class="label text">‹ ALL ALARMS · 2</span><span class="label keycap phone-hide">ESC</span></a>
+   <div class="row" style="margin-top:var(--andura-space-16);flex-wrap:wrap"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0l8 15H0z" style="fill:var(--andura-color-caution)"/><path d="M7 5h2v5H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="label text value">P2 CAUTION</span><span class="label value">09:51:40 · ACKED</span><span class="label value">09:52 · M. KELLER</span></div>
+   <span class="title trunc">KR-01 nailer magazine low</span>
+   <div class="param"><span class="label">MAGAZINE</span>
+    <div class="row" style="align-items:baseline;margin-top:var(--andura-space-8);flex-wrap:wrap"><span class="value vm">14</span><span class="muted value">%</span><span class="label value" style="margin-left:auto">LIMIT 10 %</span></div></div>
+   <span class="muted">About 6 min of nails left. Refill from rack B2; KR-01 keeps nailing until the limit.</span>
+   <div class="acts"><button class="btn hit">PROCEDURE SP-031</button></div>
+  </div>
+ </aside>
+</main>
+
+<footer>
+ <a class="hit label" href="#robot"><span>ROBOT DETAIL ›</span></a><a class="hit label" href="#timeline"><span>TIMELINE ›</span></a><a class="hit label" data-for="alarm normal inspect detail flood" href="?state=alarm"><span>ALARM LOG ›</span></a><a class="hit label" href="#diag"><span>DIAGNOSTICS ›</span></a>
+ <span class="label estop trunc" title="E-stop: physical only">E-STOP: PHYSICAL ONLY</span>
+</footer>
+<dialog id="ack" aria-labelledby="ack-t">
+ <span class="title" id="ack-t">Acknowledge P1 · KR-03 protective stop?</span>
+ <p class="muted" style="margin-top:var(--andura-space-8)">Acknowledging silences the alarm. It does not reset the robot.</p>
+ <div class="acts"><button class="btn hit" autofocus onclick="ack.close()">CANCEL</button><button class="btn pri hit" onclick="ack.close();acked()">ACKNOWLEDGE P1</button></div>
+</dialog>
+<nav class="tabs" aria-label="Sections">
+ <a class="hit label" href="#cell" title="Cell"><span>CELL</span></a><a class="hit label" href="#robots" title="Robots"><span>ROBOTS</span></a>
+ <a class="hit label" data-for="alarm normal inspect detail flood" href="?state=alarm" title="Alarms"><span class="badge"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 0h6l5 5v6l-5 5H5l-5-5V5z" style="fill:var(--andura-color-emergency)"/><path d="M7 3h2v6H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="text">P1 · 2</span></span><span>ALARMS</span></a>
+ <a class="hit label" href="#more" title="More"><span>MORE</span></a>
+</nav>
+</body></html>

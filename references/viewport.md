@@ -3,6 +3,8 @@
 
 **Why 3D at all:** ISA HP-HMI prefers 2D, low-contrast graphics for process screens. 3D is justified only for spatial robot state, and is then rendered desaturated (R §2.9, [ISA HP-HMI overview](https://www.isa.org/getmedia/06130a38-f7af-4b35-8c9c-2c34f25c1977/The-High-Performance-HMI-Overview-v2-01.pdf)). Show only measured state, synoptic rather than photoreal ([SFTE ch. 21](https://society-of-flight-test-engineers.github.io/quarto-handbook/21-display-guidelines.html)).
 
+Engine mapping (three.js, Babylon.js, Unity): `3d-engines.md`.
+
 ## 1. Camera and projection
 | Rule | Spec | Basis |
 |---|---|---|

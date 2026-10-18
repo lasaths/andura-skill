@@ -7,6 +7,11 @@ BASE = [CHROME, "--headless=new", "--no-sandbox", "--disable-gpu", "--hide-scrol
 CLASSES = {"desktop": (1600, 1000), "tablet": (1180, 820), "phone": (390, 844)}
 STATES = ("alarm", "normal", "inspect", "detail")
 
+def page_states(path):
+    """States a page declares in <meta name="andura-states" content="alarm normal …">; the four base states if it declares none."""
+    m = re.search(r'<meta name="andura-states" content="([^"]+)"', open(path).read())
+    return m.group(1).split() if m else list(STATES)
+
 def url(path, state, scale=1):
     return f"file://{path}?state={state}&scale={scale}"
 
@@ -19,7 +24,7 @@ def _chrome_pad():
     """Headless --dump-dom reserves window chrome (about 87 px), so the viewport is shorter than --window-size. Measure it once."""
     global _PAD
     if _PAD is None:
-        tmp = "/tmp/andura_vh.html"
+        tmp = f"/tmp/andura_vh_{os.getpid()}.html"
         open(tmp, "w").write('<html><body><script>document.write("<pre id=R>"+JSON.stringify([innerWidth,innerHeight])+"</pre>")</script></body></html>')
         out = subprocess.run(BASE + ["--window-size=800,800", "--dump-dom", f"file://{tmp}"], capture_output=True, text=True, check=True).stdout
         _PAD = 800 - int(re.search(r"\[\d+,(\d+)\]", out).group(1))

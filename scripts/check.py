@@ -3,7 +3,8 @@ Source of truth: tokens/andura.tokens.json. Checks SKILL.md, references/*.md, as
 tokens/build/* against it, scans for banned values, then runs a self-test that injects one violation per
 check and confirms it fails. `--example path.html` checks only that page (token-only colour, andura.css loaded).
 Exit code 0 = all pass; 1 = failures (each printed)."""
-import glob, json, os, re, sys
+import subprocess, glob, json, os, re, sys
+from html.parser import HTMLParser
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, f"{ROOT}/scripts")
 import export_tokens as ex
@@ -12,7 +13,9 @@ TOK = json.load(open(f"{ROOT}/tokens/andura.tokens.json"))
 COLOR = {k: v["$value"].upper() for k, v in TOK["color"].items() if "$value" in v}
 SEQ = [TOK["color"]["data"]["cividis"][str(i)]["$value"].upper() for i in range(7)]
 THREE = {k: v["$value"].upper() for k, v in TOK["color"]["3d"].items()}
-ALLHEX = set(COLOR.values()) | set(SEQ) | set(THREE.values())
+MODES = TOK["$extensions"]["andura"].get("modes", {})
+SUN = {k: v.upper() for k, v in MODES.get("sunlit", {}).get("color", {}).items()}
+ALLHEX = set(COLOR.values()) | set(SEQ) | set(THREE.values()) | set(SUN.values())
 VERSION = TOK["$extensions"]["andura"]["version"]
 px = lambda node: node["$value"]["value"]
 
@@ -70,7 +73,7 @@ def check_skill(S):
         if r[2] != f"{cw} × {ch}": e.append(f"SKILL canvas {cls} {r[2]}")
         if r[3] != str(px(sz["margin"][cls])): e.append(f"SKILL margin {cls} {r[3]}")
         if cls != "wall":
-            if not r[4].startswith(str(px(sz["topline"][cls]))): e.append(f"SKILL top line {cls} {r[4]}")
+            if not r[4].startswith(str(px(sz["header"][cls]))): e.append(f"SKILL top line {cls} {r[4]}")
             band = f"{sz['alarm-rows-max'][cls]['$value']} row{'s' if sz['alarm-rows-max'][cls]['$value'] > 1 else ''} × {px(sz['alarm-row'][cls])}"
             if not r[5].startswith(band): e.append(f"SKILL alarm band {cls} {r[5]} != {band}")
             if str(px(sz["footer"][cls])) not in r[6]: e.append(f"SKILL footer {cls} {r[6]}")
@@ -139,7 +142,7 @@ def check_bans(name, text):
     for i, line in enumerate(text.splitlines(), 1):
         for pat, why in BANS:
             if re.search(pat, line): e.append(f"{name}:{i} banned {why}: {line.strip()[:90]}")
-        for m in re.finditer(r"\bSurface\b(?!(?i: lift| hover))[^#\n]{0,12}(#[0-9A-Fa-f]{6})", line):
+        for m in re.finditer(r"(?<!Sunlit )\bSurface\b(?!(?i: lift| hover))[^#\n]{0,12}(#[0-9A-Fa-f]{6})", line):
             if m.group(1).upper() != COLOR["surface"]: e.append(f"{name}:{i} Surface {m.group(1)} != {COLOR['surface']}")
         if re.search(r"(?i)5A74F1", line) and re.search(r"(?i)focus\s*ring|focus ring", line) and not re.search(r"(?i)\bnever\b|\bnot\b|links only", line):
             e.append(f"{name}:{i} Ultramarine Text used as focus ring")
@@ -159,10 +162,10 @@ def inlined(code):
     return [b for b in re.findall(r"<style\b[^>]*>.*?</style>", code, re.S)
             if re.search(r"/\*[^*]*andura\.css", b) or len(re.findall(r"--andura-[\w-]+\s*:", b)) >= 10]
 
-def check_example(name, t):
+def check_example(name, t, sheet=False):
     """An example may use colours, sizes and durations only through var(--andura-*) tokens that exist, and must load
     andura.css with a real <link rel=stylesheet>, an @import, or an inlined copy (self-contained page). Allowed literals:
-    0/1 px, 0 ms, breakpoint values in @media, and anything inside <svg> (3D/scene geometry)."""
+    0/1 px, 0 ms, breakpoint values in @media and @container, and anything inside <svg> (3D/scene geometry)."""
     e = []
     blocks = inlined(t)
     own = set(re.findall(r"(--andura-[\w-]+)\s*:", "".join(blocks)))
@@ -172,17 +175,81 @@ def check_example(name, t):
         e.append(f"{name}: literal colour {bad}; use var(--andura-color-*)")
     for v in set(re.findall(r"var\((--andura-[a-zA-Z0-9-]+)\)", code)):
         if v + ":" not in CSS and v not in own: e.append(f"{name}: unknown token {v}")
-    if not LINK.search(code) and not blocks: e.append(f"{name} does not load tokens/build/andura.css")
+    if sheet: code = f"<style>{code}</style>"
+    if not sheet and not LINK.search(code) and not blocks: e.append(f"{name} does not load tokens/build/andura.css")
     nosvg = re.sub(r"<svg\b.*?</svg>", "", code, flags=re.S)
     css = "\n".join(re.findall(r"<style\b[^>]*>(.*?)</style>", nosvg, re.S) + re.findall(r'style="([^"]*)"', nosvg))
-    for q in re.findall(r"@media[^{]*", css):
-        e += [f"{name}: @media {n}px is not a breakpoint token" for n in re.findall(r"(\d+)px", q) if int(n) not in BP]
-    css = re.sub(r"@media[^{]*", "", re.sub(r"/\*.*?\*/", "", css, flags=re.S))
+    for q in re.findall(r"@(?:media|container)[^{]*", css):
+        e += [f"{name}: @media/@container {n}px is not a breakpoint token" for n in re.findall(r"(\d+)px", q) if int(n) not in BP]
+    css = re.sub(r"@(?:media|container)[^{]*", "", re.sub(r"/\*.*?\*/", "", css, flags=re.S))
     for n, u in re.findall(r"(?<![\w.#-])(\d+(?:\.\d+)?)(px|ms)\b", css):
         lit = f"{float(n):g}{u}"
         if lit in ("0px", "1px", "0ms"): continue
         tok = TOKVAL.get(lit)
         e.append(f"{name}: hand-typed {lit}" + (f"; use var({tok})" if tok else "; not a token value"))
+    return e
+
+class _Tree(HTMLParser):
+    """Minimal DOM: each node = [tag, classes, attrs, children]."""
+    VOID = {"meta", "link", "br", "img", "input", "hr", "source", "path", "line", "circle", "polyline", "rect"}
+    def __init__(self, t):
+        super().__init__(); self.root = ["#root", set(), {}, []]; self.stack = [self.root]; self.feed(t)
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs); n = [tag, set((a.get("class") or "").split()), a, []]
+        self.stack[-1][3].append(n)
+        if tag not in self.VOID: self.stack.append(n)
+    def handle_startendtag(self, tag, attrs):
+        a = dict(attrs); self.stack[-1][3].append([tag, set((a.get("class") or "").split()), a, []])
+    def handle_endtag(self, tag):
+        for i in range(len(self.stack) - 1, 0, -1):
+            if self.stack[i][0] == tag: del self.stack[i:]; break
+
+def _match(n, sel):
+    m = re.match(r"([a-z0-9#]*)((?:\.[\w-]+)*)((?:\[[\w-]+\])*)$", sel)
+    tag, cls, att = m.group(1), m.group(2).split(".")[1:], re.findall(r"\[([\w-]+)\]", m.group(3))
+    return (not tag or n[0] == tag) and set(cls) <= n[1] and all(x in n[2] for x in att)
+
+def _walk(n):
+    yield n
+    for c in n[3]: yield from _walk(c)
+
+RECIPES = [(m.group(1), [x.strip() for x in m.group(2).split(",")], [x.strip() for x in m.group(3).split(";")])
+           for m in re.finditer(r"<!-- recipe: ([\w-]+) \| root: ([^|]+)\| requires: ([^>]+?) -->", open(f"{ROOT}/references/recipes.md").read())]
+GLYPHS = {x for x in (tuple(re.findall(r'(?:d|r)="([^"]+)"', g)) for g in re.findall(r"<svg class=\"glyph\".*?</svg>", open(f"{ROOT}/references/recipes.md").read())) if x}
+
+def check_recipes(name, t):
+    """Drift check: every instance of a recipe root contains the recipe's required parts; glyphs use the 4 canonical shapes."""
+    e = []
+    tree = _Tree(t).root
+    for rname, roots, req in RECIPES:
+        for n in _walk(tree):
+            if any(_match(n, r) for r in roots):
+                miss = [q for q in req if not any(_match(d, q) for d in _walk(n) if d is not n or q == req[0] and False)]
+                if miss: e.append(f"{name}: recipe '{rname}' ({n[0]}.{'.'.join(sorted(n[1]))}) misses {', '.join(miss)} (references/recipes.md)")
+    for g in re.findall(r"<svg class=\"glyph[^\"]*\"[^>]*>.*?</svg>", t, re.S):
+        if tuple(re.findall(r'(?:d|r)="([^"]+)"', g)) not in GLYPHS: e.append(f"{name}: non-canonical status glyph {g[:60]}…")
+    return e
+
+def check_modes(colour_md):
+    """Every colour mode overrides only existing colour tokens and meets its contrast targets; colour.md §9 matches."""
+    e = []
+    base = {**COLOR, **{f"3d.{k}": v for k, v in THREE.items()}}
+    for m, d in MODES.items():
+        c = {k: v.upper() for k, v in d["color"].items()}
+        e += [f"mode {m}: {k} is not a colour token" for k in c if k not in base]
+        full = {**base, **c}
+        for a, b, tgt in d.get("contrast-targets", []):
+            r = float(ratio(full[a], full[b]))
+            if r < tgt: e.append(f"mode {m}: {a} on {b} is {r:.2f}:1 < target {tgt}:1")
+    sec = section(colour_md, "## 9.")
+    for r in rows(sec):
+        k = key(r[0].replace("Sunlit ", "")) if r and r[0].startswith("Sunlit") else None
+        if not k: continue
+        if k not in SUN: e.append(f"colour.md §9 {r[0]} is not a sunlit token"); continue
+        if r[1].strip("`").upper() != SUN[k]: e.append(f"colour.md §9 {r[0]} {r[1]} != token {SUN[k]}")
+        full = {**COLOR, **SUN}
+        if r[2] != ratio(SUN[k], full["void"]) or r[3] != ratio(SUN[k], full["surface"]): e.append(f"colour.md §9 {r[0]} contrast {r[2]} / {r[3]} != {ratio(SUN[k], full['void'])} / {ratio(SUN[k], full['surface'])}")
+    if MODES and not sec: e.append("colour.md has no §9 for the colour modes")
     return e
 
 def check_data():
@@ -198,15 +265,33 @@ def check_data():
     for p, v in ex.TOKENS:
         if ns["ANDURA"].get(ex.name(p, "-")) != ex.scalar(v)[0]: e.append(f"andura.py {ex.name(p, '-')} differs"); break
     for p in glob.glob(f"{ROOT}/examples/*.html"):
-        e += check_example(os.path.basename(p), open(p).read())
+        e += check_example(os.path.basename(p), open(p).read()) + check_recipes(os.path.basename(p), open(p).read())
+    for p in glob.glob(f"{ROOT}/examples/*.css"):  # shared example stylesheet: same token-only rules
+        e += check_example(os.path.basename(p), open(p).read(), sheet=True)
     ch = open(f"{ROOT}/CHANGELOG.md").read() if os.path.exists(f"{ROOT}/CHANGELOG.md") else ""
     m = re.search(r"^## \[?([0-9][^\]\s]*)", ch, re.M)
     if not m or m.group(1) != VERSION: e.append(f"CHANGELOG top entry {m and m.group(1)} != tokens {VERSION}")
     return e
 
+LEAK = re.compile("/" + "home/box|/" + "workspace\\b|/" + "Users/")  # split so this file does not match itself
+
+def check_leaks(name, t):
+    """No internal machine paths in shipped files."""
+    return [f"{name}:{t.count(chr(10), 0, m.start()) + 1}: internal path {m.group(0)!r}" for m in LEAK.finditer(t)]
+
+def shipped():
+    """Every text file git would ship (tracked + untracked, not ignored)."""
+    r = subprocess.run(["git", "ls-files", "-co", "--exclude-standard"], cwd=ROOT, capture_output=True, text=True)
+    names = r.stdout.split() if r.returncode == 0 else [os.path.relpath(p, ROOT) for p in glob.glob(f"{ROOT}/**/*", recursive=True) if os.path.isfile(p)]
+    out = {}
+    for n in names:
+        try: out[n] = open(f"{ROOT}/{n}", encoding="utf-8").read()
+        except (UnicodeDecodeError, OSError): pass
+    return out
+
 def run(S, R):
-    e = check_skill(S) + check_refs(R) + check_bans("SKILL.md", S)
-    for n, t in R.items(): e += check_bans(f"references/{n}", t)
+    e = check_skill(S) + check_refs(R) + check_bans("SKILL.md", S) + check_leaks("SKILL.md", S)
+    for n, t in R.items(): e += check_bans(f"references/{n}", t) + check_leaks(f"references/{n}", t)
     return e
 
 def selftest(S, R):
@@ -228,20 +313,27 @@ def selftest(S, R):
         "ban focus": (S, {**R, "research.md": R["research.md"] + "\nfocus ring #5A74F1 2 px\n"}),
         "ban status bar": (S, {**R, "research.md": R["research.md"] + "\nstatus bar 40 px\n"}),
         "ban delta": (S + "\nΔ 0.4\n", R),
+        "internal path": (S, {**R, "research.md": R["research.md"] + "\nsee /" + "home/box/x\n"}),
     }
     ex_html = open(f"{ROOT}/examples/l1-alarm.html").read()
-    for n, bad in {"example hex": ex_html.replace("</style>", ".x{color:#3A3CFF}</style>", 1),
-                   "example rgb": ex_html.replace("</style>", ".x{color:rgb(0,0,0)}</style>", 1),
-                   "example unknown token": ex_html.replace("</style>", ".x{color:var(--andura-color-pink)}</style>", 1),
+    for n, bad in {"example hex": ex_html.replace("</head>", "<style>.x{color:#3A3CFF}</style></head>", 1),
+                   "example rgb": ex_html.replace("</head>", "<style>.x{color:rgb(0,0,0)}</style></head>", 1),
+                   "example unknown token": ex_html.replace("</head>", "<style>.x{color:var(--andura-color-pink)}</style></head>", 1),
                    "example hex in style attr": ex_html.replace("<body", '<body style="color:#3A3CFF"', 1),
                    "example hex before quote": ex_html.replace("<body", '<body data-x="a" title="#3A3CFF"', 1),
                    "example no stylesheet link": re.sub(r'<link rel="stylesheet" href="[^"]*andura\.css">', "<!-- andura.css -->", ex_html),
-                   "example hand-typed px": ex_html.replace("</style>", ".x{width:57px}</style>", 1),
-                   "example px equal to a token": ex_html.replace("</style>", ".x{height:56px}</style>", 1),
-                   "example hand-typed ms": ex_html.replace("</style>", ".x{transition:opacity 200ms}</style>", 1),
+                   "example hand-typed px": ex_html.replace("</head>", "<style>.x{width:57px}</style></head>", 1),
+                   "example px equal to a token": ex_html.replace("</head>", "<style>.x{height:56px}</style></head>", 1),
+                   "example hand-typed ms": ex_html.replace("</head>", "<style>.x{transition:opacity 200ms}</style></head>", 1),
+                   "recipe drift (alarm row without edge)": ex_html.replace('<div class="r p1"><span class="edge"></span>', '<div class="r p1">', 1),
+                   "recipe drift (dialog focus not on cancel)": ex_html.replace('<button class="btn hit" autofocus', '<button class="btn hit"', 1),
+                   "non-canonical glyph": ex_html.replace('M8 0l8 15H0z', 'M8 0l7 15H1z', 1),
                    "example raw hex outside the inlined block": re.sub(r'<link rel="stylesheet" href="[^"]*andura\.css">', lambda m: "<style>" + CSS + "</style>", ex_html).replace("</body>", '<i style="color:#3A3CFF"></i></body>')}.items():
         # run() does not read examples; map "check_example flagged it" onto a case run() flags.
-        cases[n] = (S + "\nΔ", R) if check_example("l1-alarm.html", bad) else (S, R)
+        cases[n] = (S + "\nΔ", R) if check_example("l1-alarm.html", bad) + check_recipes("l1-alarm.html", bad) else (S, R)
+    if MODES.get("sunlit"):  # a sunlit colour below its contrast target must fail
+        c = MODES["sunlit"]["color"]; keep = c["muted"]; c["muted"] = COLOR["muted"]
+        cases["sunlit Muted below 7:1"] = (S + "\nΔ", R) if check_modes(R.get("colour.md", "")) else (S, R); c["muted"] = keep
     allowed = [S + "\nhover 300 ms, peek 300 / 500 ms, Lighting soft.\n", R]
     # a self-contained page with andura.css inlined (raw hexes and px inside that block) must pass
     selfcontained = re.sub(r'<link rel="stylesheet" href="[^"]*andura\.css">', lambda m: "<style>/* andura.css */\n" + CSS + "</style>", ex_html)
@@ -253,14 +345,16 @@ def selftest(S, R):
 if __name__ == "__main__":
     if "--example" in sys.argv:  # check one screen of your own: python3 scripts/check.py --example path.html
         f = sys.argv[sys.argv.index("--example") + 1]
-        errs = check_example(os.path.basename(f), open(f).read())
+        errs = check_example(os.path.basename(f), open(f).read()) + check_recipes(os.path.basename(f), open(f).read())
         print(f"{'PASS' if not errs else 'FAIL'}  example {f}"); [print("   ", x) for x in errs]
         sys.exit(1 if errs else 0)
     S = open(f"{ROOT}/SKILL.md").read()
     R = {os.path.basename(p): open(p).read() for p in sorted(glob.glob(f"{ROOT}/references/*.md"))}
     groups = [("SKILL.md vs tokens", check_skill(S)), ("references vs tokens", check_refs(R)),
               ("banned values", check_bans("SKILL.md", S) + sum((check_bans(f"references/{n}", t) for n, t in R.items()), [])),
-              ("pal json + exports", check_data())]
+              ("pal json + exports", check_data()),
+              ("colour modes (sunlit contrast targets)", check_modes(R.get("colour.md", ""))),
+              ("no internal paths in shipped files", sum((check_leaks(n, t) for n, t in shipped().items()), []))]
     st, n = selftest(S, R)
     groups.append((f"self-test ({n} cases)", st))
     fail = 0

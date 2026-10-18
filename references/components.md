@@ -19,7 +19,7 @@ Sizes are given as desktop · tablet · phone. Touch targets are always ≥ 56 p
 
 | # | Component | Anatomy | States drawn | Sizes D · T · P | Source |
 |---|---|---|---|---|---|
-| 1 | **Top line** | wordmark · h1 (or breadcrumb) · CONTROL · DATA age · clock | default, focus (crumb), stale (DATA age glyph) | 56 · 56 · 48 (phone: h1 + clock) | `topline`, `resp.top` |
+| 1 | **Top line** | mark (`size.logo`) · client logo slot · h1 (or breadcrumb) · CONTROL · DATA age · clock | default, focus (crumb), stale (DATA age glyph) | 72 · 72 · 64 (phone: mark, h1, clock) | `header`, `resp.top` |
 | 2 | **Footer / tab bar** | 4 links in fixed slots + E-STOP note / 4 tabs | default, hover, focus, active (underline / top bar), disabled, alarm badge | slot 176×72 · 168×72 · tab 97×64 (+16 home zone) | `footer`, `resp.foot` |
 | 3 | **Alarm band row** | priority bar · glyph · PRIORITY word · message · time/state · actions | default (acked), hover, focus, active, alarm (P1 unacked, 1 Hz pulse) | 48 · 56 · 64 (phone: 1 row + "+n") | `alarmband`, `resp.band` |
 | 4 | **Value / limit readout** | value (value-m/l) · unit Muted · `LIMIT n unit` label | default, disabled (—), stale, alarm (over limit + glyph + word) | 22 · 24 · 22 px value | `vlim` |

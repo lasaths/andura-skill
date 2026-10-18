@@ -2,7 +2,7 @@
 
 A complete L1 "3D dominant" screen built only from `tokens/build/andura.css`. It has no hex values and no other stylesheet (`scripts/check.py` enforces both). Open it in a browser. `?state=alarm` (default) shows the 09:54 scenario: P1 KR-03 protective stop unacked, P2 KR-01 magazine low acked. `?state=normal` shows the same cell with nothing active. `?state=inspect` shows KR-02 selected with its detail in the column. `?state=detail` shows the P1 alarm detail with its acknowledge (confirm dialog on desktop and tablet, 1500 ms hold on phone). `?scale=1.25|1.5|2` follows OS text size (`text-scale.*`).
 
-**Page contract (used by the render checks):** `?state=alarm|normal|inspect|detail` and `?scale=<number>` are read on load; an unknown state may render as normal (`persist_check.py` then reports SKIP). Every interactive element has class `hit`; truncating labels have class `trunc` and a `title`; values have class `value`. The active navigation slot carries `aria-current`, alarm badges class `badge` (the only elements `persist_check.py` masks). Screen-constant 3D strokes carry class `o3d` (with `data-inner` = the body width in scene units for an outline drawn around a body); `touch_check.py` requires ≥ 2 px on screen. Fonts load from `tokens/build/andura-fonts.css`. A self-contained page may inline `andura.css` in a `<style>` that starts with `/* andura.css */`; raw values inside that block are not flagged. Hand-typed px and ms are flagged (allowed: 0/1 px, breakpoints in `@media`, anything inside `<svg>`). The 3D view is a flat SVG stand-in; in production an engine renders it, and the overlay rules stay the same.
+**Page contract (used by the render checks):** `?state=alarm|normal|inspect|detail|stale|comms|offline|flood` (each page lists its own in `<meta name="andura-states">`), `?scale=<number>` and `?mode=sunlit` are read on load; an unknown state may render as normal (`persist_check.py` then reports SKIP). Every interactive element has class `hit`; truncating labels have class `trunc` and a `title`; values have class `value`. The active navigation slot carries `aria-current`, alarm badges class `badge` and the top-line DATA fact class `live` (the only elements `persist_check.py` masks); a block whose data can go stale carries `data-stale-in="<states>"` and a `span.age`. Screen-constant 3D strokes carry class `o3d` (with `data-inner` = the body width in scene units for an outline drawn around a body); `touch_check.py` requires ≥ 2 px on screen. Fonts load from `tokens/build/andura-fonts.css`. A self-contained page may inline `andura.css` in a `<style>` that starts with `/* andura.css */`; raw values inside that block are not flagged. Hand-typed px and ms are flagged (allowed: 0/1 px, breakpoints in `@media`, anything inside `<svg>`). The 3D view is a flat SVG stand-in; in production an engine renders it, and the overlay rules stay the same.
 
 Coordinates are CSS px, measured in headless Chrome at the reference canvases. They are y from the top, x from the left.
 
@@ -10,12 +10,12 @@ Coordinates are CSS px, measured in headless Chrome at the reference canvases. T
 | Zone | Desktop 1600 × 1000 | Tablet 1180 × 820 | Token |
 |---|---|---|---|
 | Margin | 32 | 24 | `size.margin.*` |
-| Top line | y 0–56 | y 0–56 | `size.topline.*` |
-| Alarm band (alarm only) | y 56–152, 2 rows × 48 | y 56–168, 2 rows × 56 | `size.alarm-row.*` |
-| 3D viewport (Surface) | x 0–1120, from the band (or y 56) to y 928 | x 0–680, to y 748 | — |
+| Top line | y 0–72 | y 0–72 | `size.header.*` (mark `size.logo` 32, then h1) |
+| Alarm band (alarm only) | y 72–168, 2 rows × 48 | y 72–184, 2 rows × 56 | `size.alarm-row.*` |
+| 3D viewport (Surface) | x 0–1120, from the band (or y 72) to y 928 | x 0–680, to y 748 | — |
 | Gap viewport → column | 48 | 32 | `space.48`, `space.32` |
 | Answer column (Void) | x 1168–1568, width 400 | x 712–1156, width 444 | — |
-| Column content starts | y 176 in both states | y 192 alarm, y 176 normal | — |
+| Column content starts | y 192 in both states | y 208 alarm, y 192 normal | — |
 | Footer | y 928–1000; slots of 176 at x 32, 208, 384, 560 | y 748–820; slots of 168 from x 24 | `size.footer.*`, `size.footer-slot.*` |
 
 The band appears only while a P1 or P2 is active. Its height comes out of the viewport and the column, so the top line and footer never move. `scripts/persist_check.py` proves this pixel for pixel.
@@ -29,7 +29,7 @@ The band appears only while a P1 or P2 is active. Its height comes out of the vi
 ## Answer column (desktop values; tablet in brackets)
 | Block | Spec |
 |---|---|
-| CELL | `label` at y 176. Then, 8 below: status glyph 16 (`size.glyph`) + `title` "P1 · Partly stopped". Then `body` Muted "KR-03 stopped · KR-01 caution" (hidden on tablet) |
+| CELL | `label` at y 192. Then, 8 below: status glyph 16 (`size.glyph`) + `title` "P1 · Partly stopped". Then `body` Muted "KR-03 stopped · KR-01 caution" (hidden on tablet) |
 | Progress (dimmed to 55 % in alarm) | 48 [24] below. `label` "KR-02 · W-12 PROGRESS". `display` 64 [`value-l` 40] "63" + `value-m` Muted "%" (hero unit). 4 px bar (Line track, Text fill), 16 below |
 | Path deviation | 48 [24] below. `label`, then `value-m` "0.42" + Muted "mm" (6 type tokens per class: display, value-m, h1, title, body, label) with "LIMIT 0.50 mm" right-aligned, `label` |
 | Sparkline | 8 below the value. Full column width × 32 px (`size.spark-h`). Limit = dashed Muted line (2/3 dash) at the top. Trace = 1.5 px Text. End dot r = 2.5, Text, never an alarm hue (the value text carries the alarm). Desktop y 560–592 |
@@ -50,15 +50,15 @@ The band appears only while a P1 or P2 is active. Its height comes out of the vi
 ## Phone 390 × 844 (< 600 px)
 | Zone | Spec |
 |---|---|
-| Top line | y 0–48 (`size.topline.phone`): h1 (truncates) + clock only |
-| Alarm band | y 48–112, 1 row × 64 (`size.alarm-row.phone`): edge bar, glyph, P1 word, message (ellipsis), "+1 ›" target (≥ 56 wide, full row height) opening the alarm list. No buttons; acknowledge is hold-to-ack in the detail |
+| Top line | y 0–64 (`size.header.phone`): mark, h1 (truncates) + clock |
+| Alarm band | y 64–128, 1 row × 64 (`size.alarm-row.phone`): edge bar, glyph, P1 word, message (ellipsis), "+1 ›" target (≥ 56 wide, full row height) opening the alarm list. No buttons; acknowledge is hold-to-ack in the detail |
 | 3D thumbnail | x 16–374, 16 below the band, 176 tall (`size.thumb-3d-phone`); one `.hit`, opens full-screen 3D; no tags or legend |
 | Column | single column under the thumbnail, scrolls; progress block hidden; robot rows 64 (`size.row.phone`) |
 | Tab bar | y 764–844: 64 (`size.footer.phone`) + 16 home zone (`size.home-zone`). CELL · ROBOTS · ALARMS · MORE, 4 equal slots; active = Text + 2 px `border-top` (`size.stroke-accent`). While an alarm is active, ALARMS carries a badge with the highest priority glyph + word and count (`P1 · 2`) |
 
 ## Inspect state (`?state=inspect`)
 - No alarm active (band absent). KR-02 gets a 2.5 px Ultramarine outline drawn outside the robot in 3D.
-- Column from y 176 (phone: 24 below the thumbnail): back target "‹ CELL C3" with ESC keycap (keycap hidden on phone), then 16 below the selection square (2 px Ultramarine) + `title` "KR-02 · Nailing", then W-12 / ETA.
+- Column from y 192 (phone: 24 below the thumbnail): back target "‹ CELL C3" with ESC keycap (keycap hidden on phone), then 16 below the selection square (2 px Ultramarine) + `title` "KR-02 · Nailing", then W-12 / ETA.
 - Three parameters, 24 apart: `label`, `value-m` value + Muted unit, LIMIT right-aligned, 32 px sparkline with dashed limit: PATH DEV 0.42 / 0.50 mm, NAIL DEPTH ERROR 0.30 / 1.00 mm, J3 TORQUE 62 / 85 %.
 - Footer: ROBOT DETAIL is active (Text + 2 px underline). Phone: ROBOTS tab active. `persist_check.py` masks only this slot.
 
@@ -74,3 +74,11 @@ Rims, the commanded path and the selection outline keep a constant on-screen wid
 
 ## Text scaling (`?scale=`)
 `--s` multiplies every font size, line height and text-bearing chrome height. The column is `min(400 × s, 50 %)` wide and scrolls. `.trunc` labels get an ellipsis and a `title` (peek); `.value` never shrinks or wraps. 3D tags are engine labels and are not scaled-checked (see risks in `CHANGELOG.md`).
+
+## Data-quality states
+| `?state=` | What changes |
+|---|---|
+| `stale` | PATH DEV (tracker) goes Muted with `TRACKER · AGE 0:42`; everything else live |
+| `comms` | top line `COMMS LOST · AGE 0:42`; band row COMMS LOST (stale glyph, Muted edge) above the alarms; robot rows, progress and 3D freeze in Muted with ages; 3D label NO LIVE DATA · LAST 09:55:18 |
+| `offline` | KR-02 dashed in 3D with an OFFLINE tag; its row says Offline since 09:41 · AGE 15:12; cell summary names it |
+| `flood` | one band row ALARM FLOOD · 23 alarms in 10 min · 15 shelved · 6 suppressed, ALARM LIST › to L5 `?state=flood`; the P2 row yields its slot |

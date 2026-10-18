@@ -1,0 +1,147 @@
+<!doctype html>
+<!-- ANDURA reference screen: L3 "card grid". Is the cell on track today, and what needs me?
+     Tokens only (../tokens/build/andura.css); shared chrome and recipes: andura-ui.css / andura-ui.js (references/recipes.md).
+     ?state=alarm (default) | normal | detail (P1 KR-03, right column) | empty (startup, no data yet)   ?scale=1 (default) | 1.25 | 1.5 | 2   Classes: desktop 1600 x 1000, tablet 1180 x 820, phone 390 x 844.
+     Spec: l3-cards.md -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="andura-states" content="alarm normal detail empty">
+<title>ANDURA · L3 example</title>
+<link rel="stylesheet" href="../tokens/build/andura.css">
+<link rel="stylesheet" href="../tokens/build/andura-fonts.css">
+<link rel="stylesheet" href="andura-ui.css">
+<style>/* L3 card grid: 3 x 2 borderless cards, one answer + one drill link each. Detail opens as the right column. */
+main.l3{padding:0 var(--m) var(--andura-space-24);overflow-y:auto}
+.grid{flex:1;align-self:flex-start;min-height:100%;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,calc(var(--col) * var(--s))),1fr));grid-auto-rows:minmax(min-content,1fr);gap:var(--gap);padding-top:var(--andura-space-24);min-width:0}
+.card{display:flex;flex-direction:column;gap:var(--andura-space-8);min-width:0}
+.card-3d .viewport{flex:1;min-height:calc(var(--andura-size-spark-h) * 4);max-height:calc(100vh - var(--andura-size-touch-min) * 5 * var(--s))}
+.pane{margin-right:0}
+/* desktop at 100 %: 12-column composition, 3D 8/12 beside ALARMS, then 4 equal cards; no empty slots */
+@media (min-width:1280px){html:not([data-big]) body:not([data-state=detail]) .grid{grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:minmax(0,3fr) minmax(min-content,2fr);grid-auto-rows:auto}
+ html:not([data-big]) body:not([data-state=detail]) .card{grid-column:span 3} html:not([data-big]) body:not([data-state=detail]) .card-3d{grid-column:span 8} html:not([data-big]) body:not([data-state=detail]) .card-al{grid-column:span 4}}
+@media (max-width:599px){main.l3{padding:0} .grid{align-self:stretch;display:flex;flex-direction:column;padding:var(--andura-space-16) var(--m) 0;gap:var(--sect)}
+ .card-3d{display:none}}
+@media (max-width:599px){body[data-state=detail] .content{display:none} .content{padding-bottom:var(--andura-space-16)}}body[data-state=empty] .list,body[data-state=empty] .tag{display:none!important}</style>
+</head>
+<body data-state="alarm">
+<script src="andura-ui.js"></script>
+
+<header class="top">
+ <span class="brand"><svg class="mark" viewBox="0 0 32 32" role="img" aria-label="ANDURA"><title>ANDURA</title><path d="M3 29 16 3l13 26h-7.5L16 17.5 10.5 29Z M13.5 29 16 24l2.5 5Z" style="fill:currentColor"/></svg><!-- client logo slot: <img class="client-logo" src="…" alt="Client"> --></span><span class="h1 trunc" title="Cell C3 · Wall panel line">Cell C3 · Wall panel line</span>
+ <span class="facts"><span class="label phone-hide">CONTROL <span class="text">M. KELLER</span></span><span class="label phone-hide live"><span class="fresh">DATA <span class="text">0.3 <span class="unit">s</span></span></span><span class="lost cm"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" style="fill:none;stroke:var(--andura-color-muted);stroke-dasharray:3 2"/></svg><span class="text">COMMS LOST · AGE 0:42</span></span><span class="lost em">DATA <span class="text">CONNECTING</span></span></span><span class="label text value">09:56 CEST</span></span>
+</header>
+
+<section class="band" aria-label="Active alarms">
+ <div class="r cm only comms-only"><span class="edge"></span>
+  <svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" style="fill:none;stroke:var(--andura-color-muted);stroke-dasharray:3 2"/></svg>
+  <span class="label text value">COMMS LOST</span><span class="trunc" title="Cell C3 PLC · no data since 09:55:18 · values show their last state and age">Cell C3 PLC · no data since 09:55:18 · values show their last state and age</span><span class="label value">AGE 0:42</span>
+ </div>
+ <div class="r p1"><span class="edge"></span>
+  <svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 0h6l5 5v6l-5 5H5l-5-5V5z" style="fill:var(--andura-color-emergency)"/><path d="M7 3h2v6H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg>
+  <span class="label text value">P1 EMERGENCY</span><span class="trunc" title="Cell C3 · KR-03 protective stop · J5 force 412 N, limit 380 N">Cell C3 · KR-03 protective stop · J5 force 412 N, limit 380 N</span><span class="label value phone-hide ack-state">09:54:12 · UNACK</span>
+  <span class="acts"><button class="btn hit">PROCEDURE SP-114</button><button class="btn pri hit" onclick="confirmAck()">ACKNOWLEDGE</button></span>
+  <a class="more hit label text" href="?state=detail">+1 ›</a>
+ </div>
+ <div class="r fl only flood-only"><span class="edge"></span>
+  <svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" style="fill:var(--andura-color-text)"/><path d="M7 7h2v6H7zM7 3h2v2H7z" style="fill:var(--andura-color-void)"/></svg>
+  <span class="label text value">ALARM FLOOD</span><span class="trunc" title="23 alarms in 10 min · 15 shelved · 6 suppressed by design">23 alarms in 10 min · 15 shelved · 6 suppressed by design</span>
+  <span class="acts"><a class="btn hit" href="l5-alarms.html?state=flood">ALARM LIST</a></span>
+  <a class="more hit label text" href="l5-alarms.html?state=flood">LIST ›</a>
+ </div>
+ <div class="r p2"><span class="edge"></span>
+  <svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0l8 15H0z" style="fill:var(--andura-color-caution)"/><path d="M7 5h2v5H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg>
+  <span class="label text value">P2 CAUTION</span><span class="muted trunc" title="Cell C3 · KR-01 nailer magazine 14 % · ~6 min left">Cell C3 · KR-01 nailer magazine 14 % · ~6 min left</span><span class="label value">09:51:40 · ACKED</span>
+ </div>
+</section>
+
+<main class="l3">
+ <div class="content grid">
+  <section class="card card-3d"><span class="label">3D · CELL C3</span>
+   <a class="viewport hit" href="?state=alarm" aria-label="Open the 3D view of cell C3">
+  <svg viewBox="0 0 1000 800" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+   <g style="stroke:var(--andura-color-line);fill:none;opacity:.5"><path d="M80 520L500 280L920 520L500 760Z"/></g>
+   <path d="M260 560L500 420L700 535L460 675Z" style="fill:var(--andura-color-3d-face-1);stroke:var(--andura-color-text)"/>
+   <path class="o3d" d="M330 520L520 410" vector-effect="non-scaling-stroke" style="stroke:var(--andura-color-ultramarine);stroke-width:var(--andura-size-stroke-commanded);stroke-dasharray:8 6"/>
+   <g style="fill:none;stroke-linecap:round;stroke-linejoin:round">
+    <path d="M300 470L320 380L340 360L345 450" style="stroke:var(--andura-color-3d-link);stroke-width:16"/>
+    <path class="rim rim-ca o3d" d="M300 470L320 380L340 360L345 450" vector-effect="non-scaling-stroke"/>
+    <path class="sel3d o3d" data-inner="16" d="M520 470L540 400L590 380L620 420L620 470" style="stroke:var(--andura-color-ultramarine);stroke-width:calc(16px + 2 * var(--andura-size-outline-select-3d) * var(--k, 1))"/>
+    <path class="on3d" d="M520 470L540 400L590 380L620 420L620 470" style="stroke:var(--andura-color-3d-link);stroke-width:16"/>
+    <path class="off3d" d="M520 470L540 400L590 380L620 420L620 470" style="stroke:var(--andura-color-line);stroke-width:16;stroke-dasharray:6 6;opacity:.6"/>
+    <path d="M760 560L770 480L790 470L800 540" style="stroke:var(--andura-color-3d-link);stroke-width:16"/>
+    <path class="rim rim-em o3d" d="M760 560L770 480L790 470L800 540" vector-effect="non-scaling-stroke"/>
+   </g>
+  </svg>
+  <span class="tag label text not-offline not-comms" style="left:52%;top:40%">KR-02 · NAILING</span>
+  <span class="tag row only offline-only" style="left:52%;top:40%"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" style="fill:none;stroke:var(--andura-color-muted);stroke-dasharray:3 2"/></svg><span class="label text">KR-02 · OFFLINE</span></span>
+  <span class="frozen label"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" style="fill:none;stroke:var(--andura-color-muted);stroke-dasharray:3 2"/></svg><span class="text">NO LIVE DATA · LAST 09:55:18</span></span>
+  <span class="tag ca row only alarm-only" style="left:22%;top:31%"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0l8 15H0z" style="fill:var(--andura-color-caution)"/><path d="M7 5h2v5H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="label text">KR-01 · MAG LOW</span></span>
+  <span class="tag em row only alarm-only" style="left:66%;top:47%"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 0h6l5 5v6l-5 5H5l-5-5V5z" style="fill:var(--andura-color-emergency)"/><path d="M7 3h2v6H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="label text">KR-03 · STOP</span></span>
+   </a>
+  </section>
+  <section class="card card-al"><span class="label">ALARMS</span><span class="muted only empty-only">No data yet · alarm state unknown</span>
+   <div class="list">
+    <a class="hit only alarm-only" href="?state=detail"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 0h6l5 5v6l-5 5H5l-5-5V5z" style="fill:var(--andura-color-emergency)"/><path d="M7 3h2v6H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="label text value">P1</span><span class="trunc">KR-03 protective stop</span><span class="label value">09:54</span><span class="chev label">›</span></a>
+    <a class="hit only alarm-only" href="?state=detail"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0l8 15H0z" style="fill:var(--andura-color-caution)"/><path d="M7 5h2v5H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="label text value">P2</span><span class="trunc">KR-01 magazine low</span><span class="label value">09:51</span><span class="chev label">›</span></a>
+    <span class="muted only normal-only">No active alarms</span>
+   </div>
+  </section>
+  <section class="card dim"><div class="kpi">
+ <span class="label">THROUGHPUT · TODAY</span>
+ <div class="kpi-v not-empty"><span class="value vl">286</span><span class="muted value">m²</span></div><div class="kpi-v only empty-only"><span class="value vl muted">—</span><span class="label">WAITING FOR DATA</span></div>
+ <span class="vals"><span class="label value">TARGET 296 <span class="unit">m²</span></span><span class="label value">· DEV −10</span></span>
+ <a class="hit label kpi-link" href="#trends">TRENDS ›</a>
+</div></section>
+  <section class="card"><div class="cellsum">
+ <span class="label">CELL</span>
+ <div class="row only normal-only"><span class="title">Running</span></div>
+ <div class="row only alarm-only"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 0h6l5 5v6l-5 5H5l-5-5V5z" style="fill:var(--andura-color-emergency)"/><path d="M7 3h2v6H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="title trunc">P1 · Partly stopped</span></div>
+ <span class="muted only alarm-only">KR-03 stopped · KR-01 caution</span>
+</div><div class="row only empty-only"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" style="fill:none;stroke:var(--andura-color-muted);stroke-dasharray:3 2"/></svg><span class="title">Connecting · no data yet</span></div><span class="muted only empty-only">PLC C3 · first data expected within 30 s</span>
+   <div class="list">
+    <a class="hit" href="#kr01"><span class="mono value">KR-01</span><span class="trunc muted">Nailing W-11</span><span class="chev label">›</span></a>
+    <a class="hit" href="#kr02"><span class="mono value">KR-02</span><span class="trunc muted">Nailing W-12</span><span class="chev label">›</span></a>
+    <a class="hit" href="?state=detail"><span class="mono value">KR-03</span><span class="trunc muted">Nailing W-13</span><span class="chev label">›</span></a>
+   </div>
+  </section>
+  <section class="card dim"><div class="kpi">
+ <span class="label">STUD STOCK · RACK B</span>
+ <div class="kpi-v not-empty"><span class="value vl">380</span><span class="muted value">pcs</span></div><div class="kpi-v only empty-only"><span class="value vl muted">—</span><span class="label">WAITING FOR DATA</span></div>
+ <span class="vals"><span class="label value">LIMIT 120 <span class="unit">pcs</span></span><span class="label value">· ~2 <span class="unit">h</span></span></span>
+ <a class="hit label kpi-link" href="#materials">MATERIALS ›</a>
+</div></section>
+  <section class="card dim"><span class="label">DESIGN</span><span class="title trunc">W-12 · rev C released</span><span class="muted trunc">IFC 2026-10-17 14:02 · M. Keller</span>
+   <a class="hit label kpi-link" href="#design">OPEN DESIGN ›</a></section>
+ </div>
+ <aside class="pane">
+  <!-- alarm detail: P1 KR-03 (phone: the screen the band opens) -->
+  <div class="only detail-only detail">
+   <a class="back hit" href="?state=alarm"><span class="label text">‹ ALL ALARMS · 2</span><span class="label keycap phone-hide">ESC</span></a>
+   <div class="row" style="margin-top:var(--andura-space-16);flex-wrap:wrap"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 0h6l5 5v6l-5 5H5l-5-5V5z" style="fill:var(--andura-color-emergency)"/><path d="M7 3h2v6H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="label text value">P1 EMERGENCY</span><span class="label value ack-state">09:54:12 · UNACK</span></div>
+   <span class="title trunc">KR-03 protective stop</span>
+   <div class="param"><span class="label">J5 FORCE</span>
+    <div class="row" style="align-items:baseline;margin-top:var(--andura-space-8);flex-wrap:wrap"><span class="value vm">412</span><span class="muted value">N</span><span class="label value" style="margin-left:auto">LIMIT 380 <span class="unit">N</span></span></div></div>
+   <span class="muted">Cell C3 stopped KR-03 only. Clear the fixture, then acknowledge and reset at the pendant.</span>
+   <div class="acts">
+    <button class="btn hit">PROCEDURE SP-114</button>
+    <button class="btn pri hit confirm-ack" onclick="confirmAck()">ACKNOWLEDGE</button>
+    <button class="btn hit hold" aria-label="Press and hold 1.5 seconds to acknowledge P1 KR-03"><span class="fill"></span><span>HOLD TO ACKNOWLEDGE</span></button>
+   </div>
+  </div>
+  </aside>
+</main>
+
+<footer>
+ <a class="hit label" data-for="inspect" href="?state=inspect"><span>ROBOT DETAIL ›</span></a><a class="hit label" href="#timeline"><span>TIMELINE ›</span></a><a class="hit label" data-for="detail" href="?state=detail"><span>ALARM LOG ›</span></a><a class="hit label" href="#diag"><span>DIAGNOSTICS ›</span></a>
+ <span class="label estop trunc" title="E-stop: physical only">E-STOP: PHYSICAL ONLY</span>
+</footer>
+<dialog id="ack" aria-labelledby="ack-t">
+ <span class="title" id="ack-t">Acknowledge P1 · KR-03 protective stop?</span>
+ <p class="muted" style="margin-top:var(--andura-space-8)">Acknowledging silences the alarm. It does not reset the robot.</p>
+ <div class="acts"><button class="btn hit" autofocus onclick="ack.close()">CANCEL</button><button class="btn pri hit" onclick="ack.close();acked()">ACKNOWLEDGE P1</button></div>
+</dialog>
+<nav class="tabs" aria-label="Sections">
+ <a class="hit label" data-for="alarm normal" href="?state=alarm" title="Cell"><span>CELL</span></a><a class="hit label" data-for="inspect" href="?state=inspect" title="Robots"><span>ROBOTS</span></a>
+ <a class="hit label" data-for="detail" href="?state=detail" title="Alarms"><span class="badge"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 0h6l5 5v6l-5 5H5l-5-5V5z" style="fill:var(--andura-color-emergency)"/><path d="M7 3h2v6H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="text">P1 · 2</span></span><span>ALARMS</span></a>
+ <a class="hit label" href="#more" title="More"><span>MORE</span></a>
+</nav>
+</body></html>

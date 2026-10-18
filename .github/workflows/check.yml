@@ -8,12 +8,10 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: pip install pillow
-      - name: Tokens, references, bans, versions
-        run: python3 scripts/check.py
       - name: Exports are up to date
         run: python3 scripts/export_tokens.py && git diff --exit-code tokens/build
-      - name: Example touch targets and persistence
-        run: python3 scripts/touch_check.py && python3 scripts/persist_check.py
+      - name: ANDURA checks (repo + every example)
+        run: python3 scripts/andura_check.py --all
       - uses: actions/setup-node@v4
         with: { node-version: "20" }
       - name: TypeScript export compiles

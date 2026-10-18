@@ -4,6 +4,42 @@ ANDURA uses semantic versioning. The version lives in `tokens/andura.tokens.json
 
 **Breaking change** (bump the major version; while in `0.x`, bump the minor): a changed or removed token value or name, a renamed or renumbered rule (hard rules 1–10, rules 1–13), a changed breakpoint or chrome size, or a removed reference file. Adding tokens, references, checks or examples is not breaking.
 
+## [0.6.0-draft] - 2026-10-18
+
+### Breaking
+- `size.topline.*` renamed to `size.header.*`.
+- Header heights changed from 56 · 56 · 48 to 72 · 72 · 64 (desktop · tablet · phone). Every touch class is now ≥ 56, on the 8 px grid.
+- `size.content-top` changed from 176 to 192, and the alarm band now starts at y 72 (phone: y 64).
+
+### Added
+- The ANDURA mark: a bold geometric A, a solid chevron with a small foot triangle, monochrome Text (`currentColor`). Saved as `assets/andura-mark.svg`, used at the left of the header in all six examples, and in the README title.
+- `size.logo` (32): the height of both the mark and the optional client/app logo slot (max width 4 × that). Header recipe in `recipes.md` §0 (checked for drift); header documented in `layouts.md` §0.0.
+
+## [0.5.0-draft] - 2026-10-18
+
+### Added
+- Data-quality states on the examples (`?state=`): `stale`, `comms`, `offline`, `empty`, `flood`. Pages declare their states in `<meta name="andura-states">`; the checks default to them. L1 has all four live-data states, plus L2 offline, L3 empty, L4 stale, L5 flood and L6 comms.
+- Rules (SKILL.md, `recipes.md` §9–12): stale values stay in Muted with their data age and are never shown as live; comms loss and robot offline get a band row; startup shows `—` + `WAITING FOR DATA`, never zeros; an alarm flood (> 10 alarms in 10 min, ISA-18.2) collapses to one band row, and the alarm list shows shelved alarms (time left, by whom) and suppressed-by-design counts. Alarms stay active (`body[data-alarms]`) through all of these states.
+- `touch_check.py` data-quality checks: a visible stale block must show a data age, a stale value must be Muted, and no digits may appear in the empty state. New self-test.
+- `references/charts.md`: sparkline, trend with limit band, histogram, Gantt. Covers tokens, axes (min/max only), no gridlines, cividis for data and alarm hues only on violations. Recipes `trend`, `hist` and `gantt`; used on L4 (cycle-time trend and histogram) and L6 (fabrication Gantt).
+- `references/3d-engines.md`: maps the viewport rules to three.js, Babylon.js 8 and Unity 6, with token-driven snippets. APIs were checked against the current docs.
+- Sunlit-tablet mode: `$extensions.andura.modes.sunlit` (positive polarity, Text 15:1, Muted 7:1, Line 3:1, hues 4.5:1). Exported as `[data-andura-mode="sunlit"]` CSS, `anduraSunlit` (TS), `ANDURA_SUNLIT` (Py) and `AnduraSunlit` (C#). Documented in `colour.md` §9; `check.py` verifies every target and the table. Examples accept `?mode=sunlit`.
+- Tokens: `size.chart-h` (120), `size.gantt-bar` (12), `color.on-ultramarine` (#DADADD, text on an Ultramarine fill).
+
+### Changed
+- L3 desktop uses a 12-column grid (3D 8, alarms 4, other cards 3 each), so it has no large empty areas. On tablet, L4's chart takes a full column instead of being squashed.
+- Example chrome: alarm styling keys on `body[data-alarms]` instead of `data-state=alarm`. The top-line DATA fact is the only chrome text that changes by state; `persist_check` masks it.
+
+## [0.4.0-draft] - 2026-10-18
+Consistency and coverage (Phase A). Minor bump: a new required entry point and the L5 band decision; no token changed.
+- **Reference screens L2–L6** (`examples/l2-split`, `l3-cards`, `l4-analytics`, `l5-alarms`, `l6-design-fab`, each html + md spec), same 09:54 scenario, `?state=` / `?scale=` contract, every class × state × scale passing. L3 and L4 define no inspect state (SKIP). L5 has no alarm band (the list is the alarm view, as `layouts.md` specifies). L2 inspect keeps the alarm chrome. L4 reflows with flex-wrap; L6 switches to the phone list by container query when the pane narrows it.
+- **Shared chrome:** `examples/andura-ui.css` + `andura-ui.js` (state/scale, peek titles, `aria-current`, `--k`, hold, confirm). L1 refactored onto them. New `.vals` rows: multi-value lines wrap between groups, never inside a value.
+- **`references/recipes.md`:** exact markup and state classes for alarm row, KPI, 3D tag, dialog, hold, tabs, cell summary, sparkline, plus the 4 canonical glyphs. `check.py --example` fails recipe drift (machine-readable `requires` selectors) and non-canonical glyphs.
+- **Single entry point `scripts/andura_check.py page.html [--classes|--states|--scales]`** (`--all` = repo check + every example): runs check.py --example, touch_check and persist_check, one PASS/FAIL summary, non-zero exit. SKILL.md §7 and CI use only this.
+- **`evals/`:** fixed fresh-agent prompt (SAW-1 cutting station), pass criteria A1–A6, `score.py`, run log. Needs an agent, so not in CI.
+- `check.py`: breakpoint tokens accepted in `@container`; new rule failing internal machine paths in any shipped file (31 self-test cases). Render checks use per-process temp files (safe to run in parallel); persist self-test picks an unmasked pixel next to the badge.
+- `research.md` no longer names an internal path for the base skill.
+
 ## [0.3.4-draft] - 2026-10-18
 Fixes from a second fresh-agent test.
 - Example `?state=detail`: alarm detail with acknowledge per hard rule 8 (confirm dialog with focus on CANCEL on desktop/tablet, also from the band ACKNOWLEDGE; 1500 ms hold with opacity fill on phone). Specified in `l1-alarm.md`, `layouts.md` (L5 phone) and `components.md` #12.

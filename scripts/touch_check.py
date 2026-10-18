@@ -6,11 +6,11 @@ title for peek, or is cut by an overflow:hidden ancestor); a .value is truncated
 Usage: python3 scripts/touch_check.py [page.html] [--classes desktop tablet phone] [--states alarm normal inspect] [--scales 1 2]
 The page reads ?state= and ?scale= (contract: examples/l1-alarm.md). Exit 0 = pass."""
 import argparse, json, os, sys
-from _chrome import ROOT, EXAMPLE, CLASSES, STATES, dump, prepare
+from _chrome import ROOT, EXAMPLE, CLASSES, STATES, dump, prepare, page_states
 TOK = json.load(open(f"{ROOT}/tokens/andura.tokens.json"))
 TOUCH, TEXT = TOK["size"]["touch-min"]["$value"]["value"], TOK["size"]["text-min"]["$value"]["value"]
 SCALES = [v["$value"] for k, v in TOK["text-scale"].items() if not k.startswith("$")]
-JS = """<script>addEventListener('load',()=>{const vis=e=>e.offsetParent||getComputedStyle(e).position=='fixed';
+JS = """<script>addEventListener('load',()=>{const vis=e=>(e.offsetParent||getComputedStyle(e).position=='fixed')&&getComputedStyle(e).visibility!='hidden';
 const sc=e=>{for(let a=e.parentElement;a;a=a.parentElement){const o=getComputedStyle(a).overflowY;if((o=='auto'||o=='scroll')&&a.scrollHeight>a.clientHeight)return a}return null};
 const inview=e=>{const s=sc(e);if(!s)return true;const b=e.getBoundingClientRect(),p=s.getBoundingClientRect();return b.top>=p.top-1&&b.bottom<=p.bottom+1};
 const ctx=new Map();const hits=[...document.querySelectorAll('.hit')].filter(vis).map(e=>{const s=sc(e);let dy=0;
@@ -36,7 +36,12 @@ const ov=[];for(let i=0;i<runs.length;i++)for(let j=i+1;j<runs.length;j++){const
  if(a[5]!==b[5]&&a[0]<b[2]-1&&b[0]<a[2]-1&&a[1]<b[3]-2&&b[1]<a[3]-2)ov.push(a[4]+' / '+b[4])}
 const un=[];document.querySelectorAll('body *:not(script):not(style)').forEach(e=>{if(!vis(e))return;const own=[...e.childNodes].filter(n=>n.nodeType==3).map(n=>n.textContent).join('');
 if((e.matches('button,a,.btn')||/[›‹✕]/.test(own))&&!e.closest('.hit'))un.push(own.trim().slice(0,24)||e.tagName)});
-const p=document.createElement('pre');p.id='R';p.style.display='none';p.textContent=JSON.stringify({hits,minfont:mn,unmarked:un,clip,overlap:ov,sizes:sizes.size,o3d});document.body.appendChild(p)})</script>"""
+const p=document.createElement('pre');p.id='R';p.style.display='none';const mu=(()=>{const x=document.createElement('i');x.style.color='var(--andura-color-muted)';document.body.appendChild(x);const c=getComputedStyle(x).color;x.remove();return c})();
+const dq=[];document.querySelectorAll('.stale').forEach(e=>{if(!vis(e))return;const ag=[...e.querySelectorAll('.age')].find(a=>vis(a)&&/\\d+:\\d\\d|\\d+ ?s\\b/.test(a.textContent));
+ if(!ag)dq.push('stale block without a visible data age: '+e.textContent.trim().slice(0,24));
+ e.querySelectorAll('.value').forEach(v=>{if(vis(v)&&!v.closest('.age')&&getComputedStyle(v).color!=mu)dq.push('stale value not greyed: '+v.textContent.trim().slice(0,16))})});
+if(document.body.dataset.state=='empty')document.querySelectorAll('main .value.display,main .value.vm,main .value.vl,main .spark,main .kpi-v .value:first-child').forEach(v=>{if(vis(v)&&(v.tagName=='svg'||/\\d/.test(v.textContent)))dq.push('fake live value with no data: '+(v.textContent||'spark').trim().slice(0,16))});
+p.textContent=JSON.stringify({hits,minfont:mn,unmarked:un,clip,overlap:ov,sizes:sizes.size,o3d,dq});document.body.appendChild(p)})</script>"""
 
 def measure(src, w, h, state, scale=1):
     tmp = prepare(src, JS, "tc")
@@ -63,18 +68,19 @@ def evaluate(R, w, h, touch):
     errs += [f"3D outline {c!r} is {px} px on screen < 2" for c, px in R.get("o3d", []) if px < 2]
     if R.get("sizes", 0) > 6: errs.append(f"{R['sizes']} distinct font sizes > 6")
     errs += [f"clipped text {c!r}" for c in R["clip"]] + [f"text overlap {o!r}" for o in R["overlap"]]
+    errs += R.get("dq", [])
     return errs
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("page", nargs="?", default=EXAMPLE)
     ap.add_argument("--classes", nargs="+", default=list(CLASSES), choices=list(CLASSES))
-    ap.add_argument("--states", nargs="+", default=list(STATES))
+    ap.add_argument("--states", nargs="+", help="default: the states the page declares (meta andura-states), else the 4 base states")
     ap.add_argument("--scales", nargs="+", type=float, default=SCALES)
     a = ap.parse_args()
-    page = os.path.abspath(a.page)
+    page = os.path.abspath(a.page); a.states = a.states or page_states(page)
     fail = 0
-    bad = "/tmp/andura_tc_selftest.html"
+    bad = f"/tmp/andura_tc_selftest_{os.getpid()}.html"
     open(bad, "w").write('<html><body><button>X</button><span>MORE ›</span><div class="hit" style="width:40px;height:40px">ok</div><div class="hit" style="position:absolute;left:0;top:0;width:60px;height:60px">a</div><div class="hit" style="position:absolute;left:30px;top:30px;width:60px;height:60px">b</div><span style="font-size:10px">tiny</span>' + ''.join(f'<i style="font-size:{14+i}px">s</i>' for i in range(6)) + ''
                      '<div style="width:30px;overflow:hidden;white-space:nowrap">CLIPPED LABEL</div><div style="width:40px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis"><span class="value">123.456</span></div>'
                      '<div style="position:absolute;left:200px;top:200px">OVER</div><div style="position:absolute;left:205px;top:202px">LAP</div></body></html>')
@@ -85,7 +91,7 @@ if __name__ == "__main__":
     print(f"{'PASS' if ok else 'FAIL'}  self-test: unmarked button and › link, 40 px target, overlapping targets, 10 px text, clipped label, truncated value, overlapping text, 7 font sizes detected")
     fail += not ok
     # self-test 2: a target scrolled out of view is measured; a 3D outline scaled below 2 px is caught; relative links load
-    d = "/tmp/andura_st"; os.makedirs(f"{d}/sub", exist_ok=True)
+    d = f"/tmp/andura_st_{os.getpid()}"; os.makedirs(f"{d}/sub", exist_ok=True)
     open(f"{d}/sub/st.css", "w").write(".hit{width:30px!important;height:30px!important}")
     open(f"{d}/a.html", "w").write('<html><head><style>.hit{display:block;width:60px;height:60px}</style></head><body>'
         '<div style="height:100px;overflow-y:auto"><div style="height:300px"></div><a class="hit" href="#" style="width:40px;height:40px">far</a></div>'
@@ -95,6 +101,14 @@ if __name__ == "__main__":
     s3 = evaluate(measure(f"{d}/b.html", 390, 844, "alarm"), 390, 844, True)
     ok = any("'far'" in e and "< 56" in e for e in s2) and any("3D outline" in e for e in s2) and any("< 56" in e for e in s3)
     print(f"{'PASS' if ok else 'FAIL'}  self-test: scrolled-away 40 px target, 3D outline scaled to 0.5 px, relative link (sub/st.css) loaded")
+    fail += not ok
+    # self-test 3: data quality. A stale block without a data age, a stale value still in Text, a number shown before any data arrived
+    open(f"{d}/c.html", "w").write('<html><head><style>:root{--andura-color-muted:#8A8C91}.age{color:#8A8C91}</style></head><body data-state="empty"><main>'
+        '<div class="stale"><span class="value">0.42</span></div><div class="stale"><span class="value" style="color:#fff">7</span><span class="age">AGE 0:42</span></div>'
+        '<span class="value vm">63</span></main></body></html>')
+    s4 = evaluate(measure(f"{d}/c.html", 390, 844, "empty"), 390, 844, False)
+    ok = any("without a visible data age" in e for e in s4) and any("not greyed: 7" in e for e in s4) and any("fake live value" in e for e in s4)
+    print(f"{'PASS' if ok else 'FAIL'}  self-test: stale value without data age, stale value not greyed, number shown with no data detected")
     fail += not ok
     for cls in a.classes:
         w, h = CLASSES[cls]

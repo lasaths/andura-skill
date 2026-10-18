@@ -1,7 +1,7 @@
 ---
 name: andura
 description: Use when designing, building or reviewing dark-mode operator UI for mission-critical 3D digital twins - HMI and SCADA screens, operator consoles, alarm screens, robot cell monitoring, BIM/digital-twin viewers, design-to-fabrication tracking and production analytics - on desktop, tablet, phone or control-room wall, on any platform (web, desktop, mobile, Unity, Three.js). Not for consumer apps, light themes or marketing pages.
-version: 0.3.4-draft
+version: 0.6.0-draft
 license: MIT
 allowed-tools: [Read, Write, Edit, Glob, Grep, Shell]
 ---
@@ -9,7 +9,7 @@ allowed-tools: [Read, Write, Edit, Glob, Grep, Shell]
 
 ANDURA is a human-factors system for supervising construction robots. Dark only. Every screen answers one question fast and never hides an abnormal state. (Credit: its monochrome, type-led, subtract-first style follows the nothing-design skill; nothing needs loading.)
 
-**Before you design:** take every value from `tokens/andura.tokens.json` (or its exports in `tokens/build/`). Never type a hex, size or duration by hand. Start from the worked example `examples/l1-alarm.html` and its spec `examples/l1-alarm.md`. Read a `references/` file only when you need its depth. Run the checks in §7 before you hand over.
+**Before you design:** take every value from `tokens/andura.tokens.json` (or its exports in `tokens/build/`). Never type a hex, size or duration by hand. Start from the worked example of your layout pattern (`examples/`, html + md spec) and the component recipes. Read a `references/` file only when you need its depth. Run `scripts/andura_check.py` (§7) before you hand over.
 
 Units: **px** means device-independent pixels (CSS px, Android dp, iOS pt, WPF DIP). Durations are in **ms**.
 
@@ -61,6 +61,7 @@ When two rules conflict, the lower-numbered hard rule wins, then the lower-numbe
 | Text | `#DADADD` | values, primary text, focus ring | 15.05 / 14.20 |
 | Ultramarine | `#3A3CFF` | selection, commanded path, primary button fill | 3.27 / 3.08 |
 | Ultramarine Text | `#5A74F1` | accent text and links only | 5.20 / 4.91 |
+| On Ultramarine | `#DADADD` | text on an Ultramarine fill (4.60:1 on it) | 15.05 / 14.20 |
 | Emergency | `#F45536` | P1 only | 6.20 / 5.85 |
 | Caution | `#FBB636` | P2 only | 11.85 / 11.17 |
 | Nominal | `#44B782` | explicit confirmation on detail levels only | 8.34 / 7.87 |
@@ -98,19 +99,21 @@ When two rules conflict, the lower-numbered hard rule wins, then the lower-numbe
 
 | Class | Min width | Canvas | Margin | Top line | Alarm band | Footer |
 |---|---|---|---|---|---|---|
-| Phone | 0 | 390 × 844 | 16 | 48 (h1 + clock) | 1 row × 64, top alarm + "+n" | tab bar 64 + 16 home zone |
-| Tablet | 600 | 1180 × 820 | 24 | 56 | 2 rows × 56 | 72, 168 px slots |
-| Desktop | 1280 | 1600 × 1000 | 32 | 56 | 2 rows × 48 | 72, 176 px slots |
-| Wall | 2560, viewed from ≥ 3 m | 3840 × 2160 | 64 | 56 at wall scale | 2 rows, wall scale | none, read-only |
+| Phone | 0 | 390 × 844 | 16 | 64 (mark, h1, clock) | 1 row × 64, top alarm + "+n" | tab bar 64 + 16 home zone |
+| Tablet | 600 | 1180 × 820 | 24 | 72 | 2 rows × 56 | 72, 168 px slots |
+| Desktop | 1280 | 1600 × 1000 | 32 | 72 | 2 rows × 48 | 72, 176 px slots |
+| Wall | 2560, viewed from ≥ 3 m | 3840 × 2160 | 64 | 72 at wall scale | 2 rows, wall scale | none, read-only |
 
 **Persistent zones** (`assets/sheet-min.png`):
-- **Top line:** `ANDURA · h1 (or breadcrumb Cell C3 › KR-02 › Timeline) … CONTROL owner · DATA age · clock`.
+- **Top line (header, `size.header.*`):** `ANDURA mark (size.logo) · optional client logo · h1 (or breadcrumb Cell C3 › KR-02 › Timeline) … CONTROL owner · DATA age · clock`.
 - **Alarm band:** one row per active P1 or P2, acknowledged or not, P1 on top, at most 2 rows. Put extras into "+n". The band appears while any P1 or P2 is active and disappears when none is. Its space belongs to the content area, so nothing else moves. A P1 row has an Emergency edge bar (pulsing until acknowledged), glyph, word, message (`412 N, limit 380 N`), time, PROCEDURE and ACKNOWLEDGE.
 - **Footer:** ROBOT DETAIL › · TIMELINE › · ALARM LOG › · DIAGNOSTICS › in fixed slots, then E-STOP: PHYSICAL ONLY. The active link is Text with a 2 px underline and keeps its ›. **Phone:** tab bar CELL · ROBOTS · ALARMS (P1 badge) · MORE.
 
 **Six layout patterns** (`L1`–`L6`; hierarchy levels are `D1`–`D4`, ISA-101) (pick one by the question): L1 3D dominant · L2 split · L3 card grid · L4 analytics · L5 alarm list · L6 design-to-fab. Questions and shapes: `references/layouts.md`.
 
 **Alarm decisions** (`references/layouts.md`): the ALARMS badge shows the highest priority + count (`P2 · 1` when only a P2 is active); cell summary `<priority> · <state>`; LIMIT is an alarm setpoint, TARGET a Muted plan value with DEV; dim routine values while a P1 is active or a P2 is unacknowledged. Phone acknowledge lives on the alarm detail screen as a 1500 ms hold.
+
+**Data-quality states** (`references/recipes.md` §9–12): never fake live. A stale value keeps its last reading in Muted with its data age (`AGE 0:42`); comms loss and robot offline get a band row with the stale or offline glyph; before first data show `—` + `WAITING FOR DATA`, never zeros; an alarm flood (> 10 alarms / 10 min, ISA-18.2) collapses to one band row, with shelved (time left, by whom) and suppressed-by-design counts on the alarm list. Charts: `references/charts.md`. Sunlit tablets (> 10 000 lx): `data-andura-mode="sunlit"`, `references/colour.md` §9.
 
 **Reflow to phone:** `references/layouts.md` (Reflow rules), `assets/responsive-sheet.png`.
 
@@ -120,7 +123,7 @@ When two rules conflict, the lower-numbered hard rule wins, then the lower-numbe
 
 ## 6. Workflow
 1. State the one question for the view and pick the layout pattern (§5).
-2. Copy the persistent zones (top line, band, footer) from `examples/l1-alarm.html` unchanged. Load `tokens/build/andura.css` and `andura-fonts.css` (IBM Plex, see `references/platforms.md`).
+2. Start from the worked example of that pattern (`examples/l1-alarm` … `l6-design-fab`, html + md spec). Keep the persistent zones (top line, band, footer) unchanged; build components with the exact markup in `references/recipes.md` (shared styles in `examples/andura-ui.css`). Load `tokens/build/andura.css` and `andura-fonts.css` (IBM Plex, see `references/platforms.md`).
 3. Place the answer: one display value, at most 5 values, each with a limit.
 4. Add exceptions in colour, glyph and word. Check rule 11.
 5. Define peek, inspect and drill, and the back path (`references/interaction.md`).
@@ -129,12 +132,12 @@ When two rules conflict, the lower-numbered hard rule wins, then the lower-numbe
 ---
 
 ## 7. Verify before you ship
-Run from the repo root. Each script exits 0 only if every check passes, and prints each failure.
-- `python3 scripts/check.py`: this file, the references and the exports match `tokens/andura.tokens.json`; contrast figures match the WCAG ratio of the token hexes; no banned or superseded value (thin weights, Sans at weight 600, old surfaces, an Ultramarine Text focus ring, old 40 px chrome, the Greek delta, a hex that is not a token); versions agree. Includes a self-test.
-- `python3 scripts/touch_check.py`: every class (desktop, tablet, phone) × state (alarm, normal, inspect, detail) × text scale (100–200 %). Targets 56 × 56 px or larger on touch classes and on every class at 200 %; no overlapping targets or text; no clipped text and no truncated value; no text below 12 px; no unmarked interactive element; targets in scroll areas are scrolled into view and measured.
-- `python3 scripts/persist_check.py`: on every class the top line and footer (phone: tab bar) are pixel-identical between normal and alarm, and between normal and inspect or detail apart from the exact active-slot and badge elements.
+One command, from the repo root: `python3 scripts/andura_check.py page.html` (`--all` = the repo check plus every example). It prints one PASS/FAIL summary and exits non-zero on any failure. It runs:
+- `check.py --example`: colours, sizes and durations only from tokens (no hex/rgb, no hand-typed px or ms except 0/1 px, breakpoint tokens in `@media`/`@container`, and `<svg>` geometry); `andura.css` loaded; every recipe used without drift from `references/recipes.md`; canonical glyphs. With `--all` also: this file, the references and exports match the tokens, contrast, banned values, versions.
+- `touch_check.py`: every class (desktop, tablet, phone) × state the page declares (alarm, normal, inspect, detail, stale, comms, offline, empty, flood) × text scale (100–200 %). Targets ≥ 56 × 56 px on touch classes and at 200 %, inside the canvas, not overlapping; no overlapping or clipped text, no truncated value, no text < 12 px, every stale block shows its age, no digits in the empty state, no unmarked interactive element, ≤ 6 font sizes, 3D `.o3d` outlines ≥ 2 px.
+- `persist_check.py`: top line and footer (phone: tab bar) pixel-identical across states, apart from `[aria-current]` and `.badge`; states the page lacks are SKIP.
 
-To check your own screen: `check.py --example page.html`, `touch_check.py page.html [--classes …] [--states …]` (also: 3D `.o3d` outlines ≥ 2 px on screen), `persist_check.py page.html` (states the page lacks are reported SKIP; it masks only `[aria-current]` and `.badge`). A self-contained page may inline `andura.css` (marker comment `/* andura.css */`). The page must use the `.hit` convention and the `?state=` / `?scale=` contract in `examples/l1-alarm.md`. Then check by hand:
+Pass `--classes`, `--states`, `--scales` to narrow a run. The page must use the `.hit` convention and the `?state=` / `?scale=` contract in `examples/l1-alarm.md`; it may inline `andura.css` (marker `/* andura.css */`). Then check by hand:
 - [ ] **5-second test:** a naive viewer states the cell status and the active task after 5 s.
 - [ ] **Colour, glyph and word** on every status. Nominal green absent from overviews.
 - [ ] **No hidden status** under selection, tooltip, occlusion, off-screen position or LOD.
@@ -147,11 +150,13 @@ To check your own screen: `check.py --example page.html`, `touch_check.py page.h
 ## References (read on demand)
 | File | Read it when you need |
 |---|---|
-| `examples/l1-alarm.html`, `l1-alarm.md` | a working screen built only from tokens, with coordinates |
+| `examples/l1-alarm` … `l6-design-fab` (`.html` + `.md`) | one working screen per layout pattern L1–L6, built only from tokens; L1 spec has coordinates |
 | `references/layouts.md` | L1–L6 questions and shapes, reflow rules, interaction states |
 | `references/components.md` | anatomy, states and sizes for components 1–26 |
+| `references/recipes.md` | exact markup and state classes for alarm row, KPI, 3D tag, dialog, hold, tabs, cell summary, sparkline (checked for drift) |
 | `references/interaction.md` | peek/inspect/drill, selection, commands, accessibility, do and don't |
-| `references/viewport.md` | 3D camera, navigation, encodings, labels, aids, frame budget |
+| `references/viewport.md` · `3d-engines.md` | 3D camera, navigation, encodings, labels, aids, frame budget · mapped to three.js, Babylon.js, Unity |
+| `references/charts.md` | sparkline, trend with limit band, histogram, Gantt: tokens, axes, colour |
 | `references/motion.md` | motion tokens, behaviours, reduced motion, forbidden motion |
 | `references/colour.md` · `typography.md` | palette derivation, CVD, focus vs selection · scale tests, wall sizing |
 | `references/platforms.md` | consuming tokens in CSS, TS, Python, C#/WPF, Unity, Three.js |

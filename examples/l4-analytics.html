@@ -1,0 +1,132 @@
+<!doctype html>
+<!-- ANDURA reference screen: L4 "analytics". How did this week go against plan, and what cost the most time?
+     Tokens only (../tokens/build/andura.css); shared chrome and recipes: andura-ui.css / andura-ui.js (references/recipes.md).
+     ?state=alarm (default) | normal | detail (P1 KR-03, right column) | stale (MES feed 12 min old)   ?scale=1 (default) | 1.25 | 1.5 | 2   Classes: desktop 1600 x 1000, tablet 1180 x 820, phone 390 x 844.
+     Spec: l4-analytics.md -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="andura-states" content="alarm normal detail stale">
+<title>ANDURA · L4 example</title>
+<link rel="stylesheet" href="../tokens/build/andura.css">
+<link rel="stylesheet" href="../tokens/build/andura-fonts.css">
+<link rel="stylesheet" href="andura-ui.css">
+<style>/* L4 analytics: hero vs plan, m²/day bars with a dashed plan line (values on peek, below-plan deltas labelled), top-3 downtime.
+   Flex-wrap instead of breakpoints: the chart drops below the left column whenever the content gets narrow (pane open, tablet, 200 %). */
+main.l4{padding:0 var(--m) var(--andura-space-24);overflow-y:auto}
+.content{flex:1;align-self:flex-start;min-height:100%;display:flex;flex-wrap:wrap;align-content:flex-start;gap:var(--sect) var(--gap);padding-top:var(--andura-space-24);min-width:0}
+.left{flex:1 1 calc(var(--col) * var(--s));display:flex;flex-direction:column;gap:var(--sect);min-width:0}
+.chart{flex:2 1 calc(var(--col) * var(--s));display:flex;flex-direction:column;gap:var(--andura-space-16);min-width:0}
+.down{display:flex;flex-direction:column;gap:var(--andura-space-8)}
+.bars{display:flex;gap:var(--gap);align-items:stretch;height:calc(100vh - var(--andura-size-touch-min) * 5 * var(--s));min-height:calc(var(--andura-size-spark-h) * 3)}
+.plan{position:absolute;left:0;right:0;border-top:var(--andura-size-stroke-accent) dashed var(--andura-color-muted)}
+.bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:var(--andura-space-8);text-decoration:none;min-width:0}
+.dlt{justify-content:center;text-align:center}
+.track{flex:1;width:100%;position:relative} .bar .b{position:absolute;left:0;right:0;bottom:0;background:var(--andura-color-line)}
+.pane{margin-right:0}
+@media (max-width:599px){main.l4{padding:0} .content{align-self:stretch;flex-direction:column;flex-wrap:nowrap;padding:var(--andura-space-16) var(--m) 0} .left{display:contents} .chart{order:1;flex:none} .down{order:2}
+ .bars{flex-direction:column;gap:0;height:auto}
+ .bar{flex-direction:row-reverse;justify-content:flex-end;min-height:calc(var(--andura-size-touch-min) * var(--s));gap:var(--andura-space-16)}
+ .dlt{justify-content:flex-end;flex:none} .track{height:var(--andura-space-8);flex:1;width:auto} .bar .b{top:0;bottom:0;height:auto!important;right:auto;width:var(--w)} .plan{display:block;top:0;bottom:0!important;border-top:0;border-left:var(--andura-size-stroke-accent) solid var(--andura-color-muted);left:var(--p)} .bar>.label:last-child{width:calc(var(--andura-size-glyph) * 3 * var(--s));flex:none}}
+@media (max-width:599px){body[data-state=detail] .content{display:none} .content{padding-bottom:var(--andura-space-16)}}</style>
+</head>
+<body data-state="alarm">
+<script src="andura-ui.js"></script>
+
+<header class="top">
+ <span class="brand"><svg class="mark" viewBox="0 0 32 32" role="img" aria-label="ANDURA"><title>ANDURA</title><path d="M3 29 16 3l13 26h-7.5L16 17.5 10.5 29Z M13.5 29 16 24l2.5 5Z" style="fill:currentColor"/></svg><!-- client logo slot: <img class="client-logo" src="…" alt="Client"> --></span><span class="h1 trunc" title="Cell C3 · Throughput">Cell C3 · Throughput</span>
+ <span class="facts"><span class="label phone-hide">CONTROL <span class="text">M. KELLER</span></span><span class="label phone-hide live"><span class="fresh">DATA <span class="text">0.3 <span class="unit">s</span></span></span><span class="lost cm"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" style="fill:none;stroke:var(--andura-color-muted);stroke-dasharray:3 2"/></svg><span class="text">COMMS LOST · AGE 0:42</span></span><span class="lost em">DATA <span class="text">CONNECTING</span></span></span><span class="label text value">09:56 CEST</span></span>
+</header>
+
+<section class="band" aria-label="Active alarms">
+ <div class="r cm only comms-only"><span class="edge"></span>
+  <svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" style="fill:none;stroke:var(--andura-color-muted);stroke-dasharray:3 2"/></svg>
+  <span class="label text value">COMMS LOST</span><span class="trunc" title="Cell C3 PLC · no data since 09:55:18 · values show their last state and age">Cell C3 PLC · no data since 09:55:18 · values show their last state and age</span><span class="label value">AGE 0:42</span>
+ </div>
+ <div class="r p1"><span class="edge"></span>
+  <svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 0h6l5 5v6l-5 5H5l-5-5V5z" style="fill:var(--andura-color-emergency)"/><path d="M7 3h2v6H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg>
+  <span class="label text value">P1 EMERGENCY</span><span class="trunc" title="Cell C3 · KR-03 protective stop · J5 force 412 N, limit 380 N">Cell C3 · KR-03 protective stop · J5 force 412 N, limit 380 N</span><span class="label value phone-hide ack-state">09:54:12 · UNACK</span>
+  <span class="acts"><button class="btn hit">PROCEDURE SP-114</button><button class="btn pri hit" onclick="confirmAck()">ACKNOWLEDGE</button></span>
+  <a class="more hit label text" href="?state=detail">+1 ›</a>
+ </div>
+ <div class="r fl only flood-only"><span class="edge"></span>
+  <svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" style="fill:var(--andura-color-text)"/><path d="M7 7h2v6H7zM7 3h2v2H7z" style="fill:var(--andura-color-void)"/></svg>
+  <span class="label text value">ALARM FLOOD</span><span class="trunc" title="23 alarms in 10 min · 15 shelved · 6 suppressed by design">23 alarms in 10 min · 15 shelved · 6 suppressed by design</span>
+  <span class="acts"><a class="btn hit" href="l5-alarms.html?state=flood">ALARM LIST</a></span>
+  <a class="more hit label text" href="l5-alarms.html?state=flood">LIST ›</a>
+ </div>
+ <div class="r p2"><span class="edge"></span>
+  <svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0l8 15H0z" style="fill:var(--andura-color-caution)"/><path d="M7 5h2v5H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg>
+  <span class="label text value">P2 CAUTION</span><span class="muted trunc" title="Cell C3 · KR-01 nailer magazine 14 % · ~6 min left">Cell C3 · KR-01 nailer magazine 14 % · ~6 min left</span><span class="label value">09:51:40 · ACKED</span>
+ </div>
+</section>
+
+<main class="l4">
+ <div class="content">
+  <div class="left">
+  <div class="hero dim" data-stale-in="stale"><span class="age label"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" style="fill:none;stroke:var(--andura-color-muted);stroke-dasharray:3 2"/></svg>MES · AGE 12:40</span><div class="kpi">
+ <span class="label">THROUGHPUT · THIS WEEK</span>
+ <div class="kpi-v not-empty"><span class="value display">412</span><span class="muted value">m²</span></div><div class="kpi-v only empty-only"><span class="value display muted">—</span><span class="label">WAITING FOR DATA</span></div>
+ <span class="vals"><span class="label value">TARGET 440 <span class="unit">m²</span></span><span class="label value">· DEV −28</span></span>
+</div></div>
+  <section class="down"><span class="label">TOP DOWNTIME · THIS WEEK</span>
+   <div class="list">
+    <a class="hit" href="?state=detail"><span class="glyph only normal-only"></span><svg class="glyph only alarm-only" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 0h6l5 5v6l-5 5H5l-5-5V5z" style="fill:var(--andura-color-emergency)"/><path d="M7 3h2v6H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="trunc">KR-03 protective stops</span><span class="value mono">0:14 <span class="muted">h</span></span><span class="chev label">›</span></a>
+    <a class="hit" href="#kr01"><span class="glyph only normal-only"></span><svg class="glyph only alarm-only" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0l8 15H0z" style="fill:var(--andura-color-caution)"/><path d="M7 5h2v5H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="trunc">KR-01 magazine refills</span><span class="value mono">0:09 <span class="muted">h</span></span><span class="chev label">›</span></a>
+    <a class="hit" href="#w12"><span class="glyph"></span><span class="trunc">W-12 fixture changes</span><span class="value mono">0:06 <span class="muted">h</span></span><span class="chev label">›</span></a>
+   </div>
+  </section>
+  <div class="dim" data-stale-in="stale"><span class="age label"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" style="fill:none;stroke:var(--andura-color-muted);stroke-dasharray:3 2"/></svg>MES · AGE 12:40</span><figure class="trend" aria-label="Cycle time today, limit 4:30 min, over limit 09:12 to 09:41">
+     <div class="row vals"><span class="label">CYCLE TIME · TODAY</span><span class="label value">LIMIT 4:30 min</span></div>
+     <div class="plot"><div class="yax"><span class="label value">5:00</span><span class="label value">3:00</span></div>
+      <svg class="tr" viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden="true"><rect class="band" x="0" y="0" width="400" height="30"/><line class="limit-line" x1="0" y1="30" x2="400" y2="30" vector-effect="non-scaling-stroke"/><line class="base" x1="0" y1="120" x2="400" y2="120" vector-effect="non-scaling-stroke"/><polyline class="trace" points="0.0,68 36.4,64 72.7,60 109.1,62 145.5,54 181.8,49 218.2,38 254.5,24 290.9,19 327.3,32 363.6,45 400.0,48" vector-effect="non-scaling-stroke"/><polyline class="over" points="238.9,30 254.5,24 290.9,19 321.7,30" vector-effect="non-scaling-stroke"/></svg></div>
+     <div class="xax"><span class="label">06:00</span><span class="label">NOW</span></div>
+     <div class="row vals"><svg class="glyph only alarm-only" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0l8 15H0z" style="fill:var(--andura-color-caution)"/><path d="M7 5h2v5H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="label text value">OVER LIMIT</span><span class="label value">09:12–09:41</span></div>
+    </figure></div>
+  <div class="dim" data-stale-in="stale"><span class="age label"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" style="fill:none;stroke:var(--andura-color-muted);stroke-dasharray:3 2"/></svg>MES · AGE 12:40</span><figure class="hist" aria-label="Cycle time distribution today, 7 of 48 parts over the 4:30 limit">
+     <div class="row vals"><span class="label">CYCLE TIME · 48 PARTS</span><span class="label value">7 OVER LIMIT</span></div>
+     <div class="hbars"><span class="hb" style="height:18%" title="3:30 min: 3 parts"></span><span class="hb" style="height:53%" title="3:45 min: 9 parts"></span><span class="hb" style="height:100%" title="4:00 min: 17 parts"></span><span class="hb" style="height:71%" title="4:15 min: 12 parts"></span><span class="hb over" style="height:29%" title="4:30 min: 5 parts"></span><span class="hb over" style="height:12%" title="4:45 min: 2 parts"></span><span class="limit-mark" style="left:66.67%"></span></div>
+     <div class="xax"><span class="label">3:30</span><span class="label">4:30 LIMIT</span><span class="label">5:00</span></div>
+    </figure></div>
+  </div>
+  <section class="chart dim" aria-label="m² per day against plan" data-stale-in="stale">
+   <span class="label">M² PER DAY · PLAN 110 <span class="unit">m²</span> (DASHED)</span><span class="age label"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" style="fill:none;stroke:var(--andura-color-muted);stroke-dasharray:3 2"/></svg>THU UNTIL 09:43 · AGE 12:40</span>
+   <div class="bars">
+   <a class="hit bar" href="#mon" title="MON 96 m² · plan 110 m²"><span class="vals dlt"><span class="label value">−14</span><span class="label value">vs plan</span></span><span class="track"><span class="b" style="height:60.0%;--w:60.0%"></span><span class="plan" style="bottom:68.75%;--p:68.75%"></span></span><span class="label">MON</span></a>
+   <a class="hit bar" href="#tue" title="TUE 72 m² · plan 110 m²"><span class="vals dlt"><span class="label value">−38</span><span class="label value">vs plan</span></span><span class="track"><span class="b" style="height:45.0%;--w:45.0%"></span><span class="plan" style="bottom:68.75%;--p:68.75%"></span></span><span class="label">TUE</span></a>
+   <a class="hit bar" href="#wed" title="WED 101 m² · plan 110 m²"><span class="vals dlt"><span class="label value">−9</span><span class="label value">vs plan</span></span><span class="track"><span class="b" style="height:63.1%;--w:63.1%"></span><span class="plan" style="bottom:68.75%;--p:68.75%"></span></span><span class="label">WED</span></a>
+   <a class="hit bar" href="#thu" title="THU 143 m² · plan 110 m²"><span class="vals dlt"></span><span class="track"><span class="b" style="height:89.4%;--w:89.4%"></span><span class="plan" style="bottom:68.75%;--p:68.75%"></span></span><span class="label">THU</span></a>
+   </div>
+  </section>
+ </div>
+ <aside class="pane">
+  <!-- alarm detail: P1 KR-03 (phone: the screen the band opens) -->
+  <div class="only detail-only detail">
+   <a class="back hit" href="?state=alarm"><span class="label text">‹ ALL ALARMS · 2</span><span class="label keycap phone-hide">ESC</span></a>
+   <div class="row" style="margin-top:var(--andura-space-16);flex-wrap:wrap"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 0h6l5 5v6l-5 5H5l-5-5V5z" style="fill:var(--andura-color-emergency)"/><path d="M7 3h2v6H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="label text value">P1 EMERGENCY</span><span class="label value ack-state">09:54:12 · UNACK</span></div>
+   <span class="title trunc">KR-03 protective stop</span>
+   <div class="param"><span class="label">J5 FORCE</span>
+    <div class="row" style="align-items:baseline;margin-top:var(--andura-space-8);flex-wrap:wrap"><span class="value vm">412</span><span class="muted value">N</span><span class="label value" style="margin-left:auto">LIMIT 380 <span class="unit">N</span></span></div></div>
+   <span class="muted">Cell C3 stopped KR-03 only. Clear the fixture, then acknowledge and reset at the pendant.</span>
+   <div class="acts">
+    <button class="btn hit">PROCEDURE SP-114</button>
+    <button class="btn pri hit confirm-ack" onclick="confirmAck()">ACKNOWLEDGE</button>
+    <button class="btn hit hold" aria-label="Press and hold 1.5 seconds to acknowledge P1 KR-03"><span class="fill"></span><span>HOLD TO ACKNOWLEDGE</span></button>
+   </div>
+  </div>
+  </aside>
+</main>
+
+<footer>
+ <a class="hit label" data-for="inspect" href="?state=inspect"><span>ROBOT DETAIL ›</span></a><a class="hit label" data-for="alarm normal" href="#timeline"><span>TIMELINE ›</span></a><a class="hit label" data-for="detail" href="?state=detail"><span>ALARM LOG ›</span></a><a class="hit label" href="#diag"><span>DIAGNOSTICS ›</span></a>
+ <span class="label estop trunc" title="E-stop: physical only">E-STOP: PHYSICAL ONLY</span>
+</footer>
+<dialog id="ack" aria-labelledby="ack-t">
+ <span class="title" id="ack-t">Acknowledge P1 · KR-03 protective stop?</span>
+ <p class="muted" style="margin-top:var(--andura-space-8)">Acknowledging silences the alarm. It does not reset the robot.</p>
+ <div class="acts"><button class="btn hit" autofocus onclick="ack.close()">CANCEL</button><button class="btn pri hit" onclick="ack.close();acked()">ACKNOWLEDGE P1</button></div>
+</dialog>
+<nav class="tabs" aria-label="Sections">
+ <a class="hit label" href="?state=alarm" title="Cell"><span>CELL</span></a><a class="hit label" data-for="inspect" href="?state=inspect" title="Robots"><span>ROBOTS</span></a>
+ <a class="hit label" data-for="detail" href="?state=detail" title="Alarms"><span class="badge"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 0h6l5 5v6l-5 5H5l-5-5V5z" style="fill:var(--andura-color-emergency)"/><path d="M7 3h2v6H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="text">P1 · 2</span></span><span>ALARMS</span></a>
+ <a class="hit label" data-for="alarm normal" href="#more" title="More"><span>MORE</span></a>
+</nav>
+</body></html>

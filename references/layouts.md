@@ -2,12 +2,15 @@
 
 > Provenance: paths under `layouts/` name the original design workspace and are not shipped. The renders are in `assets/`; runnable equivalents are `examples/`, `render/` and `scripts/`.
 
-Six generic layouts (L1–L6) for dark-UI 3D digital-twin dashboards in robotic construction, each in desktop (`L*-min`), tablet (`L*-tab`) and phone (`L*-phone`) form. Built on `research.md` (R §x), `colour.md` (C) and `typography.md` (T). Worked example: `examples/l1-alarm.html`; checks: `scripts/touch_check.py`, `scripts/persist_check.py`.
+Six generic layouts (L1–L6) for dark-UI 3D digital-twin dashboards in robotic construction, each in desktop (`L*-min`), tablet (`L*-tab`) and phone (`L*-phone`) form. Built on `research.md` (R §x), `colour.md` (C) and `typography.md` (T). Worked examples: `examples/l1-alarm` … `l6-design-fab` (html + md); check with `scripts/andura_check.py`.
 
 **Citation key.** *(R §n)* = research.md section. *(C)* = colour.md. *(T)* = typography.md. **[DC]** = my own design choice, not taken from a source.
 
 ---
 ## 0. Shared foundations
+
+### 0.0 Header
+Header height `size.header.*`: desktop 72, tablet 72, phone 64 (≥ `size.touch-min`, 8 px grid). Left: ANDURA mark (`size.logo` 32, Text, `assets/andura-mark.svg`), then an optional client/app logo slot (same height, max 4 × wide), then the h1. Right: CONTROL owner, DATA age, clock. Content starts at `size.content-top` (192). Markup: `recipes.md` §0.
 
 ### 0.1 Tokens used everywhere
 | Role | Value |
@@ -21,7 +24,7 @@ Six generic layouts (L1–L6) for dark-UI 3D digital-twin dashboards in robotic 
 
 ### 0.2 Locked chrome and spacing
 - Spacing steps 8 / 16 / 24 / 32 / 48 (4 only inside components). All layout dimensions are multiples of 8. Margins 32 desktop / 24 tablet / 16 phone. Breakpoints and chrome per class: see *Breakpoints* below.
-- Desktop chrome: top line 56 · alarm band 48 per row, max 2 rows · footer 72 with 176 px slots. Content starts at y = 176.
+- Desktop chrome: header 72 · alarm band 48 per row, max 2 rows · footer 72 with 176 px slots. Content starts at y = 192.
 - Touch targets 56 × 56 px minimum, ≥ 8 px apart, on every touch screen. Mouse buttons 32 px (40 in the alarm band). Rows 32 desktop / 56 tablet / 64 phone.
 - Panels: Surface + 1 px Line hairline, no shadows, blur or gradients. Whitespace before lines.
 - E-stop is physical. The UI mirrors its state and never draws an E-STOP button.
@@ -107,7 +110,7 @@ See `motion.md` (locked tokens: 0 / 120 / 200 / 400 ms, P1 pulse 1 Hz until ack,
 | Class | Range | Reference canvas | Type tokens | Margin | Chrome |
 |---|---|---|---|---|---|
 | Phone | < 600 | 390 × 844 portrait | phone scale (below) | 16 | top line 48 · alarm band 1 row 64 · bottom tab bar 64 + 16 home zone |
-| Tablet | 600 – 1279 | 1180 × 820 landscape | tablet column of typography.md | 24 | top line 56 · alarm band 2 × 56 · footer 72 (168 px slots) |
+| Tablet | 600 – 1279 | 1180 × 820 landscape | tablet column of typography.md | 24 | header 72 · alarm band 2 × 56 · footer 72 (168 px slots) |
 | Desktop | ≥ 1280 | 1600 × 1000 | desktop column | 32 | top line 56 · band 2 × 48 · footer 72 (176 px slots) |
 | Wall | ≥ 2560 at ≥ 3 m | 3840 × 2160 | wall column | 64 | desktop layout, wall sizes; no touch |
 

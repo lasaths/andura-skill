@@ -10,6 +10,7 @@ public static class Andura
     public static readonly string ColorText = "#DADADD";
     public static readonly string ColorUltramarine = "#3A3CFF";
     public static readonly string ColorUltramarineText = "#5A74F1";
+    public static readonly string ColorOnUltramarine = "#DADADD";
     public static readonly string ColorEmergency = "#F45536";
     public static readonly string ColorCaution = "#FBB636";
     public static readonly string ColorNominal = "#44B782";
@@ -194,9 +195,10 @@ public static class Andura
     public static readonly int SizeRowDesktop = 32;
     public static readonly int SizeRowTablet = 56;
     public static readonly int SizeRowPhone = 64;
-    public static readonly int SizeToplineDesktop = 56;
-    public static readonly int SizeToplineTablet = 56;
-    public static readonly int SizeToplinePhone = 48;
+    public static readonly int SizeHeaderDesktop = 72;
+    public static readonly int SizeHeaderTablet = 72;
+    public static readonly int SizeHeaderPhone = 64;
+    public static readonly int SizeLogo = 32;
     public static readonly int SizeAlarmRowDesktop = 48;
     public static readonly int SizeAlarmRowTablet = 56;
     public static readonly int SizeAlarmRowPhone = 64;
@@ -220,7 +222,9 @@ public static class Andura
     public static readonly int SizeColumnDesktop = 400;
     public static readonly int SizeColumnTablet = 444;
     public static readonly float SizeStrokeRim = 2.5f;
-    public static readonly int SizeContentTop = 176;
+    public static readonly int SizeContentTop = 192;
+    public static readonly int SizeChartH = 120;
+    public static readonly int SizeGanttBar = 12;
     public static readonly int BreakpointPhone = 0;
     public static readonly int BreakpointTablet = 600;
     public static readonly int BreakpointDesktop = 1280;
@@ -247,4 +251,33 @@ public static class Andura
     public static readonly int TextScale200 = 2;
     public static readonly float OpacityDim = 0.55f;
     public static readonly float OpacityScrim = 0.6f;
+}
+
+/// <summary>Colour overrides for the sunlit mode (same member names as Andura).</summary>
+public static class AnduraSunlit
+{
+    public static readonly string ColorVoid = "#F5F5F2";
+    public static readonly string ColorSurface = "#E6E6E2";
+    public static readonly string ColorSurfaceHover = "#D9D9D4";
+    public static readonly string ColorSurfaceLift = "#FFFFFF";
+    public static readonly string ColorLine = "#6E7075";
+    public static readonly string ColorMuted = "#3E4045";
+    public static readonly string ColorText = "#0B0B0D";
+    public static readonly string ColorUltramarine = "#2426D6";
+    public static readonly string ColorUltramarineText = "#1E20B0";
+    public static readonly string ColorEmergency = "#B42A12";
+    public static readonly string ColorCaution = "#8C5A00";
+    public static readonly string ColorNominal = "#1D6B43";
+    public static readonly string Color3dFace1 = "#DEDED9";
+    public static readonly string Color3dFace2 = "#D6D6D1";
+    public static readonly string Color3dFace3 = "#CFCFCA";
+    public static readonly string Color3dBase = "#C8C8C3";
+    public static readonly string Color3dElement = "#C0C0BB";
+    public static readonly string Color3dLink = "#B4B4AF";
+    public static readonly string Color3dJoint = "#9C9C97";
+    public static readonly string Color3dEdge = "#75767A";
+    public static readonly string Color3dDetail = "#5E6064";
+    public static readonly string Color3dLinkLine = "#4A4C50";
+    public static readonly string Color3dJointLine = "#3A3C40";
+    public static readonly string ColorOnUltramarine = "#F5F5F2";
 }

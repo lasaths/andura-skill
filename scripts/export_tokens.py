@@ -36,6 +36,7 @@ def scalar(v):
     return v, ""
 
 TOKENS = list(flat(TOK))
+MODES = {m: {("color",) + tuple(k.split(".")): v for k, v in d["color"].items()} for m, d in TOK["$extensions"]["andura"].get("modes", {}).items()}
 
 def name(path, sep):
     return sep.join(re.sub(r"[^a-zA-Z0-9]", sep, p) for p in path)
@@ -51,7 +52,10 @@ def css():
         val = (f"cubic-bezier({', '.join(map(str, x))})" if u == "bezier" else
                f"{x}{u}" if u in ("px", "ms", "em") else str(x))
         out.append(f"  --andura-{name(p, '-')}: {val};")
-    return "\n".join(out + ["}"]) + "\n"
+    out.append("}")
+    for m, d in MODES.items():  # colour modes: same names, other values, switched by <html data-andura-mode="…">
+        out += [f'[data-andura-mode="{m}"] {{'] + [f"  --andura-{name(p, '-')}: {v};" for p, v in d.items()] + ["}"]
+    return "\n".join(out) + "\n"
 
 def literal(x, lang):
     if isinstance(x, str):
@@ -67,12 +71,20 @@ def literal(x, lang):
 def ts():
     out = ["// Generated from tokens/andura.tokens.json. Units: px for sizes, ms for durations.", "export const andura = {"]
     out += [f'  "{name(p, "-")}": {literal(scalar(v)[0], "ts")},' for p, v in TOKENS]
-    return "\n".join(out + ["} as const;"]) + "\n"
+    out.append("} as const;")
+    for m, d in MODES.items():
+        out += [f"/** Colour overrides for the {m} mode (same keys as andura). */", f"export const andura{camel((m,))} = {{"]
+        out += [f'  "{name(p, "-")}": {literal(v, "ts")},' for p, v in d.items()] + ["} as const;"]
+    return "\n".join(out) + "\n"
 
 def py():
     out = ["# Generated from tokens/andura.tokens.json. Units: px for sizes, ms for durations.", "ANDURA = {"]
     out += [f'    "{name(p, "-")}": {literal(scalar(v)[0], "py")},' for p, v in TOKENS]
-    return "\n".join(out + ["}"]) + "\n"
+    out.append("}")
+    for m, d in MODES.items():
+        out += [f"# Colour overrides for the {m} mode (same keys as ANDURA).", f"ANDURA_{m.upper()} = {{"]
+        out += [f'    "{name(p, "-")}": {literal(v, "py")},' for p, v in d.items()] + ["}"]
+    return "\n".join(out) + "\n"
 
 def cs():
     out = ["// Generated from tokens/andura.tokens.json. Units: px (= WPF DIP) for sizes, ms for durations.",
@@ -81,7 +93,11 @@ def cs():
         x, _ = scalar(v)
         typ = "string" if isinstance(x, str) else "float[]" if isinstance(x, list) else "float" if isinstance(x, float) else "int"
         out.append(f"    public static readonly {typ} {camel(p)} = {literal(x, 'cs')};")
-    return "\n".join(out + ["}"]) + "\n"
+    out.append("}")
+    for m, d in MODES.items():
+        out += ["", f"/// <summary>Colour overrides for the {m} mode (same member names as Andura).</summary>", f"public static class Andura{camel((m,))}", "{"]
+        out += [f"    public static readonly string {camel(p)} = {literal(v, 'cs')};" for p, v in d.items()] + ["}"]
+    return "\n".join(out) + "\n"
 
 FONT_DIR = "../../render/fonts"  # relative to tokens/build/; scripts/render_hero.py downloads IBM Plex (OFL) there
 FONT_FILES = [("font-family-mono", "IBMPlexMono-Regular.ttf", "400", ""), ("font-family-mono", "IBMPlexMono-Medium.ttf", "500", " Medium"),

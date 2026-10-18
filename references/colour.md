@@ -95,3 +95,26 @@ Ultramarine vs Emergency and Caution stays ≥ 51 in every simulation. Ultramari
 - Scales: cividis https://journals.plos.org/plosone/article?id=10.1371%2Fjournal.pone.0199239 · viridis https://bids.github.io/colormap/ · Crameri 2020 https://www.nature.com/articles/s41467-020-19160-7 · https://www.fabiocrameri.ch/colourpalettes/ · Moreland https://www.kennethmoreland.com/color-maps/
 - WCAG 2.2: https://www.w3.org/TR/WCAG22/ · 1.4.11: https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html · 2.3.1: https://www.w3.org/WAI/WCAG22/Understanding/three-flashes-or-below-threshold
 - CVD model: colorspacious (Machado 2009), as used by Nuñez 2018.
+
+## 9. Sunlit-tablet mode (`$extensions.andura.modes.sunlit`)
+**When:** a tablet or phone used outdoors or at an open bay door in direct sun (roughly > 10 000 lx on the screen), where the dark theme washes out. Not for control rooms, walls or desktops: there the dark theme stays (glare, halation and adaptation arguments in §1–§4 still hold). The operator switches it from the tablet's quick settings or the app follows the ambient light sensor with hysteresis (on above about 10 000 lx, off below about 5 000 lx, never more than once a minute), so the screen never flickers between modes.
+
+**What changes:** only colour values. Polarity flips to dark on light, because reflected sunlight adds the same luminance to every pixel, and a bright background keeps the eye light-adapted and the pupil small: effective contrast is (L_fg + L_reflected) / (L_bg + L_reflected), which collapses for light text on black but much less for dark text on a bright background (Buchner, Mayr & Brandt 2009; Piepenbrock et al. 2013). Every token name, rule, glyph and size stays; status is still colour + glyph + word. Set `data-andura-mode="sunlit"` on `<html>`; `andura.css` carries the overrides, the TS/Python/C# exports carry `anduraSunlit` / `ANDURA_SUNLIT` / `AnduraSunlit` override maps. Examples: add `?mode=sunlit`.
+
+**Contrast targets** (raised over the dark theme because glare eats contrast; `scripts/check.py` fails any pair below target): Text ≥ 15:1 on Void and Surface; Muted ≥ 7:1 (WCAG AAA); Emergency, Caution and Ultramarine Text ≥ 4.5:1 on Void and Surface (they carry words); Line ≥ 3:1 (WCAG 1.4.11 non-text); Ultramarine ≥ 4.5:1 on Void and ≥ 3:1 on the 3D link body; status rims ≥ 3:1 on `3d.face-3`.
+
+| Token | Hex | vs Void | vs Surface |
+|---|---|---|---|
+| Sunlit Void | `#F5F5F2` | 1.00 | 1.15 |
+| Sunlit Surface | `#E6E6E2` | 1.15 | 1.00 |
+| Sunlit Line | `#6E7075` | 4.54 | 3.96 |
+| Sunlit Muted | `#3E4045` | 9.50 | 8.29 |
+| Sunlit Text | `#0B0B0D` | 18.00 | 15.71 |
+| Sunlit Ultramarine | `#2426D6` | 8.28 | 7.22 |
+| Sunlit Ultramarine Text | `#1E20B0` | 10.18 | 8.89 |
+| Sunlit Emergency | `#B42A12` | 5.86 | 5.12 |
+| Sunlit Caution | `#8C5A00` | 5.37 | 4.69 |
+| Sunlit Nominal | `#1D6B43` | 5.94 | 5.19 |
+
+Caution darkens to an ochre so that it carries text on a light background; its hue stays distinct from Emergency (CVD order is unchanged: Emergency is the darker, redder one). 3D faces invert to light greys (`3d.*` overrides). Cividis stays as is (designed for both polarities).
+Sources: Buchner, Mayr & Brandt 2009, *Ergonomics* 52(7) (positive polarity advantage grows with display luminance); Piepenbrock, Mayr, Mund & Buchner 2013, *Ergonomics* 56(7) (positive polarity advantage across ages); WCAG 2.2 1.4.6 / 1.4.11.

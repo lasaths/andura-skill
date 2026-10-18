@@ -1,176 +1,40 @@
 <!doctype html>
 <!-- ANDURA worked example: L1 "3D dominant". Every colour, font, size and duration comes from ../tokens/build/andura.css;
-     no hex values, no other stylesheet. Query parameters:
+     no hex values. Shared chrome and recipes: andura-ui.css / andura-ui.js (references/recipes.md). Query parameters:
        ?state=alarm (default) | normal | inspect | detail (alarm detail: confirm on desktop/tablet, hold on phone)      ?scale=1 (default) | 1.25 | 1.5 | 2   (OS text size, text-scale.*)
      Classes: desktop >= 1280 px (reference 1600 x 1000), tablet 600-1279 (1180 x 820), phone < 600 (390 x 844).
      Spec with coordinates: l1-alarm.md -->
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="andura-states" content="alarm normal inspect detail stale comms offline flood">
 <title>ANDURA · L1 example</title>
 <link rel="stylesheet" href="../tokens/build/andura.css">
 <link rel="stylesheet" href="../tokens/build/andura-fonts.css">
-<style>
-:root{ --s:var(--andura-text-scale-100);
-  --m:var(--andura-size-margin-desktop); --top:var(--andura-size-topline-desktop); --row:var(--andura-size-alarm-row-desktop);
-  --foot:var(--andura-size-footer-desktop); --slot:var(--andura-size-footer-slot-desktop); --list-row:var(--andura-size-row-desktop);
-  --btn:var(--andura-size-button-band); --col:var(--andura-size-column-desktop); --gap:var(--andura-space-48); --sect:var(--andura-space-48); --edge:var(--andura-space-4);
-  --body:var(--andura-type-body-desktop-fontSize); --body-lh:var(--andura-type-body-desktop-lineHeight);
-  --label:var(--andura-type-label-desktop-fontSize); --label-lh:var(--andura-type-label-desktop-lineHeight);
-  --h1:var(--andura-type-h1-desktop-fontSize); --title:var(--andura-type-title-desktop-fontSize);
-  --vl:var(--andura-type-value-l-desktop-fontSize); --vm:var(--andura-type-value-m-desktop-fontSize);
-  --display:var(--andura-type-display-desktop-fontSize); }
-@media (max-width:1279px){ /* tablet: below breakpoint.desktop (1280) */
- :root{--m:var(--andura-size-margin-tablet); --top:var(--andura-size-topline-tablet); --row:var(--andura-size-alarm-row-tablet);
-  --foot:var(--andura-size-footer-tablet); --slot:var(--andura-size-footer-slot-tablet); --list-row:var(--andura-size-row-tablet);
-  --btn:var(--andura-size-alarm-row-tablet); --col:var(--andura-size-column-tablet); --gap:var(--andura-space-32); --sect:var(--andura-space-24);
-  --body:var(--andura-type-body-tablet-fontSize); --body-lh:var(--andura-type-body-tablet-lineHeight);
-  --label:var(--andura-type-label-tablet-fontSize); --label-lh:var(--andura-type-label-tablet-lineHeight);
-  --h1:var(--andura-type-h1-tablet-fontSize); --title:var(--andura-type-title-tablet-fontSize);
-  --vl:var(--andura-type-value-l-tablet-fontSize); --vm:var(--andura-type-value-m-tablet-fontSize);
-  --display:var(--andura-type-value-l-tablet-fontSize);}
- .tab-hide{display:none!important}
-}
-@media (max-width:599px){ /* phone: below breakpoint.tablet (600) */
- :root{--m:var(--andura-size-margin-phone); --top:var(--andura-size-topline-phone); --row:var(--andura-size-alarm-row-phone);
-  --foot:var(--andura-size-footer-phone); --list-row:var(--andura-size-row-phone); --sect:var(--andura-space-24);
-  --body:var(--andura-type-body-phone-fontSize); --body-lh:var(--andura-type-body-phone-lineHeight);
-  --label:var(--andura-type-label-phone-fontSize); --label-lh:var(--andura-type-label-phone-lineHeight);
-  --h1:var(--andura-type-h1-phone-fontSize); --title:var(--andura-type-title-phone-fontSize);
-  --vl:var(--andura-type-value-l-phone-fontSize); --vm:var(--andura-type-value-m-phone-fontSize);
-  --display:var(--andura-type-value-l-phone-fontSize);}
- .phone-hide{display:none!important}
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{height:100vh;display:flex;flex-direction:column;background:var(--andura-color-void);color:var(--andura-color-text);
- font-family:var(--andura-font-family-sans);font-size:calc(var(--body) * var(--s));line-height:calc(var(--body-lh) * var(--s));font-variant-numeric:tabular-nums;overflow:hidden}
-.mono,.label,.value{font-family:var(--andura-font-family-mono);font-variant-numeric:tabular-nums slashed-zero}
-.label{font-weight:var(--andura-font-weight-medium);font-size:calc(var(--label) * var(--s));line-height:calc(var(--label-lh) * var(--s));letter-spacing:var(--andura-type-label-tracking);text-transform:uppercase;color:var(--andura-color-muted)}
-.label.text{color:var(--andura-color-text)} .muted{color:var(--andura-color-muted)} .unit{text-transform:none}
-.h1{font-weight:var(--andura-font-weight-medium);font-size:calc(var(--h1) * var(--s));color:var(--andura-color-muted)}
-.title{font-weight:var(--andura-font-weight-medium);font-size:calc(var(--title) * var(--s))}
-.vl{font-size:calc(var(--vl) * var(--s));letter-spacing:-.01em} .vm{font-size:calc(var(--vm) * var(--s))}
-.display{font-size:calc(var(--display) * var(--s));line-height:1;letter-spacing:-.02em}
-.value{white-space:nowrap;flex:none} /* values never truncate or wrap */
-.trunc{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis} /* labels: ellipsis, full text in title (peek) */
-.row{display:flex;align-items:center;gap:var(--andura-space-8);min-width:0}
-.glyph{width:calc(var(--andura-size-glyph) * var(--s));height:calc(var(--andura-size-glyph) * var(--s));flex:none}
-/* 1 top line: always-on facts only */
-.top{height:calc(var(--top) * var(--s));flex:none;display:flex;align-items:center;gap:var(--andura-space-24);padding:0 var(--m);min-width:0}
-.top .facts{margin-left:auto;display:flex;gap:var(--andura-space-24);flex:none}
-/* 2 alarm band: one row per active P1/P2, max 2 rows (phone 1); absent when none is active */
-.band{flex:none;background:var(--andura-color-surface);display:none}
-body[data-state=alarm] .band,body[data-state=detail] .band{display:block}
-.band .r{min-height:calc(var(--row) * var(--s));display:flex;align-items:center;gap:var(--andura-space-16);padding:0 var(--m);position:relative}
-.band .r+.r{border-top:1px solid var(--andura-color-void)}
-.band .edge{position:absolute;left:0;top:0;bottom:0;width:var(--edge)}
-.p1 .edge{background:var(--andura-color-emergency);animation:pulse var(--andura-motion-duration-pulse) ease-in-out infinite}
-.p2 .edge{background:var(--andura-color-caution)}
-.band .acts{margin-left:auto;display:flex;gap:var(--andura-space-8);align-self:stretch;align-items:center;flex:none}
-.band .more{display:none;margin-left:auto;flex:none;min-width:var(--andura-size-touch-min);align-self:stretch;align-items:center;justify-content:flex-end;white-space:nowrap}
-@keyframes pulse{50%{opacity:var(--andura-motion-pulse-min-opacity)}}
-@media (prefers-reduced-motion:reduce){.p1 .edge{animation:none}}
-.btn{min-height:calc(var(--btn) * var(--s));padding:0 var(--andura-space-16);display:flex;align-items:center;border:1px solid var(--andura-color-line);background:none;color:var(--andura-color-text);white-space:nowrap;
- font:inherit;font-family:var(--andura-font-family-mono);font-weight:var(--andura-font-weight-medium);font-size:calc(var(--label) * var(--s));letter-spacing:var(--andura-type-label-tracking);text-transform:uppercase}
-@media (max-width:1279px){.band .btn{align-self:stretch}}
-.btn.pri{background:var(--andura-color-ultramarine);border-color:var(--andura-color-ultramarine)}
-.hit:focus-visible{outline:var(--andura-size-focus-ring) solid var(--andura-color-text);outline-offset:var(--andura-size-focus-gap)}
-/* 3 main: 3D viewport (engine-rendered in production) + answer column */
-main{flex:1;display:flex;min-height:0}
-.viewport{flex:1;position:relative;background:var(--andura-color-surface);overflow:hidden;min-width:0}
-.viewport>svg{position:absolute;inset:0;width:100%;height:100%}
-.viewport .legend{position:absolute;left:var(--m);bottom:var(--andura-space-24)}
-.tag{position:absolute;border:1px solid var(--andura-color-line);background:var(--andura-color-void);padding:var(--andura-space-4) var(--andura-space-8);white-space:nowrap}
-.tag.em{border-color:var(--andura-color-emergency)} .tag.ca{border-color:var(--andura-color-caution)}
-.only{display:none!important}
-body[data-state=alarm] .alarm-only,body[data-state=detail] .alarm-only,body[data-state=detail] .detail-only,body[data-state=normal] .normal-only,body[data-state=inspect] .inspect-only{display:flex!important}
-body[data-state=alarm] .cell-only,body[data-state=normal] .cell-only{display:block!important}
-aside{width:min(calc(var(--col) * var(--s)),50%);flex:none;margin:0 var(--m) 0 var(--gap);display:flex;flex-direction:column;overflow-y:auto;
- padding-top:calc(var(--andura-size-content-top) - var(--top))} /* content starts at y = 176 */
-body[data-state=alarm] aside,body[data-state=detail] aside{padding-top:var(--andura-space-24)}
-.dim{opacity:1} body[data-state=alarm] .dim{opacity:var(--andura-opacity-dim)}
-.limit-line{stroke:var(--andura-color-muted);stroke-dasharray:2 3}
-.spark{display:block;width:100%;height:calc(var(--andura-size-spark-h) * var(--s));margin-top:var(--andura-space-8)}
-.robots{margin-top:auto;padding:var(--andura-space-24) 0}
-@media (max-width:1279px){.robots{padding-top:var(--andura-space-16)}}
-.robots .hit{text-decoration:none;min-height:calc(var(--list-row) * var(--s));display:flex;align-items:center;gap:var(--andura-space-8);color:var(--andura-color-muted)}
-.robots .hit.abn{color:var(--andura-color-text)}
-.chev{margin-left:auto;display:none;flex:none}
-@media (max-width:1279px){.chev{display:inline}}
-.back{display:flex;align-items:center;gap:var(--andura-space-16);min-height:var(--andura-size-touch-min);text-decoration:none;margin-top:calc(var(--andura-space-24) * -1)}
-.keycap{border:1px solid var(--andura-color-line);padding:0 var(--andura-space-4)}
-.param{margin-top:var(--andura-space-24)}
-/* selection: Ultramarine outline in 3D, square glyph in the column */
-.kr02-sel{display:none} body[data-state=inspect] .kr02-sel{display:inline}
-.sel-glyph{width:calc(var(--andura-size-glyph) * var(--s));height:calc(var(--andura-size-glyph) * var(--s));border:var(--andura-size-stroke-accent) solid var(--andura-color-ultramarine);flex:none}
-/* 4 footer: fixed slots; active link = Text + 2 px underline and keeps its › */
-footer{height:calc(var(--foot) * var(--s));flex:none;display:flex;align-items:center;padding:0 var(--m)}
-footer .hit{min-width:var(--slot);padding-right:var(--andura-space-16);white-space:nowrap;height:100%;display:flex;align-items:center;color:var(--andura-color-muted);text-decoration:none;flex:none}
-footer [aria-current]{color:var(--andura-color-text)}
-footer [aria-current] span{border-bottom:var(--andura-size-stroke-accent) solid var(--andura-color-text)}
-/* alarm detail: acknowledge = confirm dialog (desktop, tablet) or hold-to-acknowledge (phone), never in the band (hard rule 8) */
-.detail{flex-direction:column;gap:var(--andura-space-8)}
-.detail .acts{display:flex;flex-direction:column;gap:var(--andura-space-8);margin-top:var(--andura-space-24)}
-.detail .btn{min-height:calc(var(--andura-size-touch-min) * var(--s));justify-content:center}
-.hold{display:none!important;position:relative;overflow:hidden}
-.hold .fill{position:absolute;inset:0;background:var(--andura-color-ultramarine);opacity:0;transition:opacity var(--andura-motion-duration-fast-out) linear}
-.hold.holding .fill{opacity:1;transition:opacity var(--andura-motion-duration-hold) linear} /* opacity only, no width growth */
-.hold span{position:relative}
-body.acked .p1 .edge{animation:none}
-dialog{margin:auto;background:var(--andura-color-surface);border:1px solid var(--andura-color-line);color:var(--andura-color-text);padding:var(--andura-space-24);max-width:min(calc(var(--andura-size-column-desktop) * var(--s)),90vw)}
-dialog::backdrop{background:var(--andura-color-void);opacity:var(--andura-opacity-scrim)}
-dialog .acts{display:flex;gap:var(--andura-space-8);margin-top:var(--andura-space-24);justify-content:flex-end}
-footer .estop{margin-left:auto}
-.tabs{display:none}
-/* phone: 3D thumbnail, single column, one 64 px band row, tab bar 64 + 16 home zone */
-@media (max-width:599px){
- .top .facts .phone-hide{display:none}
- .band .r.p2{display:none} .band .acts{display:none} .band .more{display:flex} .band .r.p1{cursor:pointer}
- main{flex-direction:column;overflow-y:auto}
- .viewport{flex:none;height:var(--andura-size-thumb-3d-phone);margin:var(--andura-space-16) var(--m) 0}
- .viewport .legend,body main .viewport .tag{display:none!important}
- aside{width:auto;margin:0 var(--m);padding-top:var(--andura-space-24);overflow:visible;flex:none}
- body[data-state=alarm] aside,body[data-state=detail] aside{padding-top:var(--andura-space-24)}
- .robots{margin-top:var(--andura-space-24);padding:0 0 var(--andura-space-16)}
- footer{display:none}
- .tabs{display:flex;flex:none;height:calc((var(--foot) * var(--s)) + var(--andura-size-home-zone));padding-bottom:var(--andura-size-home-zone);border-top:1px solid var(--andura-color-line)}
- .tabs .hit{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--andura-space-4);color:var(--andura-color-muted);text-decoration:none;position:relative;min-width:0;border-top:var(--andura-size-stroke-accent) solid transparent;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
- .tabs .hit>span{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
- .tabs .badge{display:flex;justify-content:center;align-items:center;gap:var(--andura-space-4);visibility:hidden} /* slot reserved: the label never moves */
- body[data-state=alarm] .tabs .badge,body[data-state=detail] .tabs .badge{visibility:visible} .tabs .badge .text{color:var(--andura-color-text)}
- .tabs [aria-current]{color:var(--andura-color-text);border-top-color:var(--andura-color-text)}
- body[data-state=detail] .viewport{display:none}
- .hold{display:flex!important;min-height:calc(var(--andura-size-row-phone) * var(--s))} .confirm-ack{display:none!important}
-}
-</style></head>
+<link rel="stylesheet" href="andura-ui.css">
+</head>
 <body data-state="alarm">
-<script>const q=new URLSearchParams(location.search);if(q.get('state'))document.body.dataset.state=q.get('state');
-if(q.get('scale'))document.documentElement.style.setProperty('--s',q.get('scale'));
-addEventListener('DOMContentLoaded',()=>{
- document.querySelectorAll('.trunc:not([title])').forEach(e=>e.title=e.textContent.trim()); /* peek = full label */
- const st=document.body.dataset.state; /* active nav slot = aria-current (persist_check masks it) */
- document.querySelectorAll('[data-for]').forEach(e=>{if(e.dataset.for.split(' ').includes(st))e.setAttribute('aria-current','page')});
- /* constant on-screen width for scaled 3D outlines: --k = user units per CSS px */
- const v=document.querySelector('.viewport>svg'),fit=()=>{const b=v.getBoundingClientRect();if(b.width)v.style.setProperty('--k',Math.max(1000/b.width,800/b.height))};
- fit();new ResizeObserver(fit).observe(v);
- /* hold-to-acknowledge: 1500 ms (motion.duration.hold); release cancels */
- document.querySelectorAll('.hold').forEach(h=>{const on=()=>h.classList.add('holding'),off=()=>h.classList.remove('holding');
-  h.addEventListener('pointerdown',on);['pointerup','pointerleave','pointercancel','blur'].forEach(x=>h.addEventListener(x,off));
-  h.addEventListener('keydown',e=>{if(e.key==' '||e.key=='Enter'){e.preventDefault();on()}});h.addEventListener('keyup',off);
-  h.addEventListener('transitionend',e=>{if(h.classList.contains('holding')&&e.propertyName=='opacity'){off();acked()}})});
-});
-function confirmAck(){document.getElementById('ack').showModal()} /* desktop/tablet: confirm step, focus on CANCEL */
-function acked(){document.body.classList.add('acked');document.querySelectorAll('.ack-state').forEach(e=>e.textContent='09:54:12 · ACKED')}</script>
+<script src="andura-ui.js"></script>
 
 <header class="top">
- <span class="label phone-hide">ANDURA</span><span class="h1 trunc" title="Cell C3 · Wall panel line">Cell C3 · Wall panel line</span>
- <span class="facts"><span class="label phone-hide">CONTROL <span class="text">M. KELLER</span></span><span class="label phone-hide">DATA <span class="text">0.3 <span class="unit">s</span></span></span><span class="label text value">09:56 CEST</span></span>
+ <span class="brand"><svg class="mark" viewBox="0 0 32 32" role="img" aria-label="ANDURA"><title>ANDURA</title><path d="M3 29 16 3l13 26h-7.5L16 17.5 10.5 29Z M13.5 29 16 24l2.5 5Z" style="fill:currentColor"/></svg><!-- client logo slot: <img class="client-logo" src="…" alt="Client"> --></span><span class="h1 trunc" title="Cell C3 · Wall panel line">Cell C3 · Wall panel line</span>
+ <span class="facts"><span class="label phone-hide">CONTROL <span class="text">M. KELLER</span></span><span class="label phone-hide live"><span class="fresh">DATA <span class="text">0.3 <span class="unit">s</span></span></span><span class="lost cm"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" style="fill:none;stroke:var(--andura-color-muted);stroke-dasharray:3 2"/></svg><span class="text">COMMS LOST · AGE 0:42</span></span><span class="lost em">DATA <span class="text">CONNECTING</span></span></span><span class="label text value">09:56 CEST</span></span>
 </header>
 
 <section class="band" aria-label="Active alarms">
+ <div class="r cm only comms-only"><span class="edge"></span>
+  <svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" style="fill:none;stroke:var(--andura-color-muted);stroke-dasharray:3 2"/></svg>
+  <span class="label text value">COMMS LOST</span><span class="trunc" title="Cell C3 PLC · no data since 09:55:18 · values show their last state and age">Cell C3 PLC · no data since 09:55:18 · values show their last state and age</span><span class="label value">AGE 0:42</span>
+ </div>
  <div class="r p1"><span class="edge"></span>
   <svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 0h6l5 5v6l-5 5H5l-5-5V5z" style="fill:var(--andura-color-emergency)"/><path d="M7 3h2v6H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg>
   <span class="label text value">P1 EMERGENCY</span><span class="trunc" title="Cell C3 · KR-03 protective stop · J5 force 412 N, limit 380 N">Cell C3 · KR-03 protective stop · J5 force 412 N, limit 380 N</span><span class="label value phone-hide ack-state">09:54:12 · UNACK</span>
   <span class="acts"><button class="btn hit">PROCEDURE SP-114</button><button class="btn pri hit" onclick="confirmAck()">ACKNOWLEDGE</button></span>
   <a class="more hit label text" href="?state=detail">+1 ›</a>
+ </div>
+ <div class="r fl only flood-only"><span class="edge"></span>
+  <svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" style="fill:var(--andura-color-text)"/><path d="M7 7h2v6H7zM7 3h2v2H7z" style="fill:var(--andura-color-void)"/></svg>
+  <span class="label text value">ALARM FLOOD</span><span class="trunc" title="23 alarms in 10 min · 15 shelved · 6 suppressed by design">23 alarms in 10 min · 15 shelved · 6 suppressed by design</span>
+  <span class="acts"><a class="btn hit" href="l5-alarms.html?state=flood">ALARM LIST</a></span>
+  <a class="more hit label text" href="l5-alarms.html?state=flood">LIST ›</a>
  </div>
  <div class="r p2"><span class="edge"></span>
   <svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0l8 15H0z" style="fill:var(--andura-color-caution)"/><path d="M7 5h2v5H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg>
@@ -186,45 +50,53 @@ function acked(){document.body.classList.add('acked');document.querySelectorAll(
    <path class="o3d" d="M330 520L520 410" vector-effect="non-scaling-stroke" style="stroke:var(--andura-color-ultramarine);stroke-width:var(--andura-size-stroke-commanded);stroke-dasharray:8 6"/>
    <g style="fill:none;stroke-linecap:round;stroke-linejoin:round">
     <path d="M300 470L320 380L340 360L345 450" style="stroke:var(--andura-color-3d-link);stroke-width:16"/>
-    <path class="kr01 o3d" d="M300 470L320 380L340 360L345 450" vector-effect="non-scaling-stroke"/>
-    <path class="kr02-sel o3d" data-inner="16" d="M520 470L540 400L590 380L620 420L620 470" style="stroke:var(--andura-color-ultramarine);stroke-width:calc(16px + 2 * var(--andura-size-outline-select-3d) * var(--k, 1))"/>
-    <path d="M520 470L540 400L590 380L620 420L620 470" style="stroke:var(--andura-color-3d-link);stroke-width:16"/>
+    <path class="rim rim-ca o3d" d="M300 470L320 380L340 360L345 450" vector-effect="non-scaling-stroke"/>
+    <path class="sel3d o3d" data-inner="16" d="M520 470L540 400L590 380L620 420L620 470" style="stroke:var(--andura-color-ultramarine);stroke-width:calc(16px + 2 * var(--andura-size-outline-select-3d) * var(--k, 1))"/>
+    <path class="on3d" d="M520 470L540 400L590 380L620 420L620 470" style="stroke:var(--andura-color-3d-link);stroke-width:16"/>
+    <path class="off3d" d="M520 470L540 400L590 380L620 420L620 470" style="stroke:var(--andura-color-line);stroke-width:16;stroke-dasharray:6 6;opacity:.6"/>
     <path d="M760 560L770 480L790 470L800 540" style="stroke:var(--andura-color-3d-link);stroke-width:16"/>
-    <path class="kr03 o3d" d="M760 560L770 480L790 470L800 540" vector-effect="non-scaling-stroke"/>
+    <path class="rim rim-em o3d" d="M760 560L770 480L790 470L800 540" vector-effect="non-scaling-stroke"/>
    </g>
   </svg>
-  <span class="tag label text" style="left:52%;top:40%">KR-02 · NAILING</span>
-  <span class="tag ca row only alarm-only" style="left:22%;top:31%"><svg class="glyph" viewBox="0 0 16 16"><path d="M8 0l8 15H0z" style="fill:var(--andura-color-caution)"/><path d="M7 5h2v5H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="label text">KR-01 · MAG LOW</span></span>
-  <span class="tag em row only alarm-only" style="left:66%;top:47%"><svg class="glyph" viewBox="0 0 16 16"><path d="M5 0h6l5 5v6l-5 5H5l-5-5V5z" style="fill:var(--andura-color-emergency)"/><path d="M7 3h2v6H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="label text">KR-03 · STOP</span></span>
+  <span class="tag label text not-offline not-comms" style="left:52%;top:40%">KR-02 · NAILING</span>
+  <span class="tag row only offline-only" style="left:52%;top:40%"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" style="fill:none;stroke:var(--andura-color-muted);stroke-dasharray:3 2"/></svg><span class="label text">KR-02 · OFFLINE</span></span>
+  <span class="frozen label"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" style="fill:none;stroke:var(--andura-color-muted);stroke-dasharray:3 2"/></svg><span class="text">NO LIVE DATA · LAST 09:55:18</span></span>
+  <span class="tag ca row only alarm-only" style="left:22%;top:31%"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0l8 15H0z" style="fill:var(--andura-color-caution)"/><path d="M7 5h2v5H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="label text">KR-01 · MAG LOW</span></span>
+  <span class="tag em row only alarm-only" style="left:66%;top:47%"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 0h6l5 5v6l-5 5H5l-5-5V5z" style="fill:var(--andura-color-emergency)"/><path d="M7 3h2v6H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="label text">KR-03 · STOP</span></span>
   <span class="legend label">GRID 1 <span class="unit">m</span> · - - - COMMANDED · — ACTUAL</span>
  </a>
 
  <aside>
   <!-- cell view (alarm, normal) -->
   <div class="only cell-only">
-   <span class="label">CELL</span>
-   <div class="row only normal-only" style="margin-top:var(--andura-space-8)"><span class="title">Running</span></div>
-   <div class="row only alarm-only" style="margin-top:var(--andura-space-8)"><svg class="glyph" viewBox="0 0 16 16"><path d="M5 0h6l5 5v6l-5 5H5l-5-5V5z" style="fill:var(--andura-color-emergency)"/><path d="M7 3h2v6H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="title trunc">P1 · Partly stopped</span></div>
-   <span class="muted only alarm-only tab-hide">KR-03 stopped · KR-01 caution</span><span class="muted only normal-only tab-hide">3 of 3 robots working</span>
+   <div class="cellsum">
+    <span class="label">CELL</span>
+    <div class="row only normal-only"><span class="title">Running</span></div>
+    <div class="row only alarm-only"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 0h6l5 5v6l-5 5H5l-5-5V5z" style="fill:var(--andura-color-emergency)"/><path d="M7 3h2v6H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="title trunc">P1 · Partly stopped</span></div>
+    <span class="muted only alarm-only not-offline">KR-03 stopped · KR-01 caution</span><span class="muted only offline-only">KR-03 stopped · KR-02 offline</span>
+   </div>
    <div class="dim" style="margin-top:var(--sect)">
-    <div class="phone-hide">
-     <span class="label">KR-02 · W-12 PROGRESS</span>
+    <div class="phone-hide" data-stale-in="comms offline">
+     <span class="label">KR-02 · W-12 PROGRESS</span><span class="age label"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" style="fill:none;stroke:var(--andura-color-muted);stroke-dasharray:3 2"/></svg>AGE 0:42</span>
      <div class="row" style="align-items:baseline;margin-top:var(--andura-space-8)"><span class="value display">63</span><span class="value vm muted">%</span></div>
      <div style="height:var(--andura-space-4);margin-top:var(--andura-space-16);background:var(--andura-color-line)"><div style="height:var(--andura-space-4);width:63%;background:var(--andura-color-text)"></div></div>
      <div class="row tab-hide" style="justify-content:space-between;margin-top:var(--andura-space-8)"><span class="muted trunc">Stud 6 of 9</span><span class="mono value">ETA 10:21 <span class="muted">· +2 min</span></span></div>
     </div>
+    <div data-stale-in="stale comms offline">
     <span class="label phone-hide" style="display:block;margin-top:var(--sect)">PATH DEV</span><span class="label only" style="display:none"></span>
     <div class="row" style="align-items:baseline;margin-top:var(--andura-space-8);flex-wrap:wrap"><span class="value vm">0.42</span><span class="muted value">mm</span><span class="label value" style="margin-left:auto">LIMIT 0.50 <span class="unit">mm</span></span></div>
+    <span class="age label"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" style="fill:none;stroke:var(--andura-color-muted);stroke-dasharray:3 2"/></svg>TRACKER · AGE 0:42</span>
     <svg class="spark" viewBox="0 0 400 32" preserveAspectRatio="none" aria-label="Path deviation, last 10 minutes">
      <line class="limit-line" x1="0" y1="4" x2="400" y2="4" vector-effect="non-scaling-stroke"/>
-     <polyline points="0,22 36,21 72,19 108,21 145,18 181,17 218,17 254,15 290,16 327,14 363,13 398,13" style="fill:none;stroke:var(--andura-color-text);stroke-width:1.5" vector-effect="non-scaling-stroke"/>
+     <polyline points="0,22 36,21 72,19 108,21 145,18 181,17 218,17 254,15 290,16 327,14 363,13 398,13" class="trace" vector-effect="non-scaling-stroke"/><path class="end" d="M398 13h0" vector-effect="non-scaling-stroke"/>
     </svg>
+    </div>
     <span class="muted tab-hide" style="display:block;margin-top:var(--andura-space-8)">Last 10 min · others in range</span>
    </div>
    <div class="robots"><span class="label">ROBOTS</span>
-    <a class="hit abn" href="#kr01"><svg class="glyph only alarm-only" viewBox="0 0 16 16"><path d="M8 0l8 15H0z" style="fill:var(--andura-color-caution)"/><path d="M7 5h2v5H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="glyph only normal-only"></span><span class="mono value">KR-01</span><span class="only alarm-only trunc">Magazine low</span><span class="only normal-only trunc">Nailing W-11</span><span class="chev label">›</span></a>
-    <a class="hit" href="?state=inspect"><span class="glyph"></span><span class="mono value">KR-02</span><span class="trunc">Nailing W-12</span><span class="chev label">›</span></a>
-    <a class="hit abn" href="?state=detail"><svg class="glyph only alarm-only" viewBox="0 0 16 16"><path d="M5 0h6l5 5v6l-5 5H5l-5-5V5z" style="fill:var(--andura-color-emergency)"/><path d="M7 3h2v6H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="glyph only normal-only"></span><span class="mono value">KR-03</span><span class="only alarm-only trunc">Protective stop</span><span class="only normal-only trunc">Nailing W-13</span><span class="chev label">›</span></a>
+    <a class="hit abn" href="#kr01" data-stale-in="comms"><svg class="glyph only alarm-only" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0l8 15H0z" style="fill:var(--andura-color-caution)"/><path d="M7 5h2v5H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="glyph only normal-only"></span><span class="mono value">KR-01</span><span class="only alarm-only trunc">Magazine low</span><span class="only normal-only trunc">Nailing W-11</span><span class="age label">AGE 0:42</span><span class="chev label">›</span></a>
+    <a class="hit" href="?state=inspect" data-stale-in="comms offline"><span class="glyph not-offline"></span><svg class="glyph only offline-only" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="7" style="fill:none;stroke:var(--andura-color-muted);stroke-dasharray:3 2"/></svg><span class="mono value">KR-02</span><span class="trunc not-offline">Nailing W-12</span><span class="trunc only offline-only">Offline since 09:41</span><span class="age label">AGE 15:12</span><span class="chev label">›</span></a>
+    <a class="hit abn" href="?state=detail" data-stale-in="comms"><svg class="glyph only alarm-only" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 0h6l5 5v6l-5 5H5l-5-5V5z" style="fill:var(--andura-color-emergency)"/><path d="M7 3h2v6H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="glyph only normal-only"></span><span class="mono value">KR-03</span><span class="only alarm-only trunc">Protective stop</span><span class="only normal-only trunc">Nailing W-13</span><span class="age label">AGE 0:42</span><span class="chev label">›</span></a>
    </div>
   </div>
   <!-- inspect view: KR-02 selected -->
@@ -234,13 +106,13 @@ function acked(){document.body.classList.add('acked');document.querySelectorAll(
    <div class="row" style="justify-content:space-between;margin-top:var(--andura-space-8);flex-wrap:wrap"><span class="muted trunc">W-12 · stud 6 of 9</span><span class="mono value">ETA 10:21 <span class="muted">· +2 min</span></span></div>
    <div class="param"><span class="label">PATH DEV</span>
     <div class="row" style="align-items:baseline;margin-top:var(--andura-space-8);flex-wrap:wrap"><span class="value vm">0.42</span><span class="muted value">mm</span><span class="label value" style="margin-left:auto">LIMIT 0.50 <span class="unit">mm</span></span></div>
-    <svg class="spark" viewBox="0 0 400 32" preserveAspectRatio="none"><line class="limit-line" x1="0" y1="4" x2="400" y2="4" vector-effect="non-scaling-stroke"/><polyline points="0,22 72,19 145,18 218,17 290,16 398,13" style="fill:none;stroke:var(--andura-color-text);stroke-width:1.5" vector-effect="non-scaling-stroke"/></svg></div>
+    <svg class="spark" viewBox="0 0 400 32" preserveAspectRatio="none"><line class="limit-line" x1="0" y1="4" x2="400" y2="4" vector-effect="non-scaling-stroke"/><polyline points="0,22 72,19 145,18 218,17 290,16 398,13" class="trace" vector-effect="non-scaling-stroke"/><path class="end" d="M398 13h0" vector-effect="non-scaling-stroke"/></svg></div>
    <div class="param"><span class="label">NAIL DEPTH ERROR</span>
     <div class="row" style="align-items:baseline;margin-top:var(--andura-space-8);flex-wrap:wrap"><span class="value vm">0.30</span><span class="muted value">mm</span><span class="label value" style="margin-left:auto">LIMIT 1.00 <span class="unit">mm</span></span></div>
-    <svg class="spark" viewBox="0 0 400 32" preserveAspectRatio="none"><line class="limit-line" x1="0" y1="4" x2="400" y2="4" vector-effect="non-scaling-stroke"/><polyline points="0,26 72,24 145,25 218,24 290,25 398,24" style="fill:none;stroke:var(--andura-color-text);stroke-width:1.5" vector-effect="non-scaling-stroke"/></svg></div>
+    <svg class="spark" viewBox="0 0 400 32" preserveAspectRatio="none"><line class="limit-line" x1="0" y1="4" x2="400" y2="4" vector-effect="non-scaling-stroke"/><polyline points="0,26 72,24 145,25 218,24 290,25 398,24" class="trace" vector-effect="non-scaling-stroke"/><path class="end" d="M398 24h0" vector-effect="non-scaling-stroke"/></svg></div>
    <div class="param"><span class="label">J3 TORQUE</span>
     <div class="row" style="align-items:baseline;margin-top:var(--andura-space-8);flex-wrap:wrap"><span class="value vm">62</span><span class="muted value">%</span><span class="label value" style="margin-left:auto">LIMIT 85 %</span></div>
-    <svg class="spark" viewBox="0 0 400 32" preserveAspectRatio="none"><line class="limit-line" x1="0" y1="4" x2="400" y2="4" vector-effect="non-scaling-stroke"/><polyline points="0,14 72,12 145,13 218,11 290,12 398,12" style="fill:none;stroke:var(--andura-color-text);stroke-width:1.5" vector-effect="non-scaling-stroke"/></svg></div>
+    <svg class="spark" viewBox="0 0 400 32" preserveAspectRatio="none"><line class="limit-line" x1="0" y1="4" x2="400" y2="4" vector-effect="non-scaling-stroke"/><polyline points="0,14 72,12 145,13 218,11 290,12 398,12" class="trace" vector-effect="non-scaling-stroke"/><path class="end" d="M398 12h0" vector-effect="non-scaling-stroke"/></svg></div>
    <span class="muted" style="display:block;margin-top:var(--andura-space-16)">Last 10 min · dashed = limit</span>
   </div>
   <!-- alarm detail: P1 KR-03 (phone: the screen the band opens) -->
@@ -274,9 +146,5 @@ function acked(){document.body.classList.add('acked');document.querySelectorAll(
  <a class="hit label" data-for="detail" href="?state=detail" title="Alarms"><span class="badge"><svg class="glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 0h6l5 5v6l-5 5H5l-5-5V5z" style="fill:var(--andura-color-emergency)"/><path d="M7 3h2v6H7zM7 11h2v2H7z" style="fill:var(--andura-color-void)"/></svg><span class="text">P1 · 2</span></span><span>ALARMS</span></a>
  <a class="hit label" href="#more" title="More"><span>MORE</span></a>
 </nav>
-<style>/* status rims on 3D robots (hard rule 3) */
-.kr01,.kr03{stroke:var(--andura-color-3d-link);stroke-width:var(--andura-size-stroke-accent)}
-body[data-state=alarm] .kr01,body[data-state=detail] .kr01{stroke:var(--andura-color-caution);stroke-width:var(--andura-size-stroke-rim)}
-body[data-state=alarm] .kr03,body[data-state=detail] .kr03{stroke:var(--andura-color-emergency);stroke-width:var(--andura-size-stroke-rim)}
-</style>
+
 </body></html>
