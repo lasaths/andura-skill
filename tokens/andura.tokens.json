@@ -2,7 +2,7 @@
  "$description": "ANDURA design tokens, single source of truth (W3C Design Tokens Community Group format). px = dp = CSS px at 1x. Generated exports: scripts/export_tokens.py.",
  "$extensions": {
   "andura": {
-   "version": "0.3.2-draft"
+   "version": "0.3.4-draft"
   }
  },
  "color": {
@@ -848,6 +848,14 @@
       "caps": true
      }
     }
+   },
+   "tracking": {
+    "$type": "dimension",
+    "$value": {
+     "value": 0.08,
+     "unit": "em"
+    },
+    "$description": "Label letter-spacing (CAPS)"
    }
   }
  },
@@ -1136,6 +1144,55 @@
     "unit": "px"
    },
    "$description": "Phone: height of the 3D thumbnail; tap opens full-screen 3D"
+  },
+  "glyph": {
+   "$type": "dimension",
+   "$value": {
+    "value": 16,
+    "unit": "px"
+   },
+   "$description": "Status glyph box"
+  },
+  "spark-h": {
+   "$type": "dimension",
+   "$value": {
+    "value": 32,
+    "unit": "px"
+   },
+   "$description": "Sparkline height"
+  },
+  "column": {
+   "$description": "Answer column width",
+   "desktop": {
+    "$type": "dimension",
+    "$value": {
+     "value": 400,
+     "unit": "px"
+    }
+   },
+   "tablet": {
+    "$type": "dimension",
+    "$value": {
+     "value": 444,
+     "unit": "px"
+    }
+   }
+  },
+  "stroke-rim": {
+   "$type": "dimension",
+   "$value": {
+    "value": 2.5,
+    "unit": "px"
+   },
+   "$description": "Status rim on a 3D object in Emergency or Caution"
+  },
+  "content-top": {
+   "$type": "dimension",
+   "$value": {
+    "value": 176,
+    "unit": "px"
+   },
+   "$description": "Answer column content starts at this y (desktop and tablet, no alarm band)"
   }
  },
  "breakpoint": {
@@ -1347,6 +1404,19 @@
   "200": {
    "$type": "number",
    "$value": 2
+  }
+ },
+ "opacity": {
+  "$description": "Opacity steps",
+  "dim": {
+   "$type": "number",
+   "$value": 0.55,
+   "$description": "Routine values while an alarm is active (rule 12)"
+  },
+  "scrim": {
+   "$type": "number",
+   "$value": 0.6,
+   "$description": "Void scrim behind a modal dialog"
   }
  }
 }

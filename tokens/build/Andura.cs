@@ -175,6 +175,7 @@ public static class Andura
     public static readonly int TypeLabelWallFontSize = 56;
     public static readonly float TypeLabelWallLineHeight = 1.1428571428571428f;
     public static readonly float TypeLabelWallLetterSpacing = 0.08f;
+    public static readonly float TypeLabelTracking = 0.08f;
     public static readonly int Space4 = 4;
     public static readonly int Space8 = 8;
     public static readonly int Space16 = 16;
@@ -214,6 +215,12 @@ public static class Andura
     public static readonly int SizeButtonBand = 40;
     public static readonly int SizeHomeZone = 16;
     public static readonly int SizeThumb3dPhone = 176;
+    public static readonly int SizeGlyph = 16;
+    public static readonly int SizeSparkH = 32;
+    public static readonly int SizeColumnDesktop = 400;
+    public static readonly int SizeColumnTablet = 444;
+    public static readonly float SizeStrokeRim = 2.5f;
+    public static readonly int SizeContentTop = 176;
     public static readonly int BreakpointPhone = 0;
     public static readonly int BreakpointTablet = 600;
     public static readonly int BreakpointDesktop = 1280;
@@ -238,4 +245,6 @@ public static class Andura
     public static readonly float TextScale125 = 1.25f;
     public static readonly float TextScale150 = 1.5f;
     public static readonly int TextScale200 = 2;
+    public static readonly float OpacityDim = 0.55f;
+    public static readonly float OpacityScrim = 0.6f;
 }

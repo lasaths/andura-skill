@@ -83,7 +83,21 @@ def cs():
         out.append(f"    public static readonly {typ} {camel(p)} = {literal(x, 'cs')};")
     return "\n".join(out + ["}"]) + "\n"
 
-EXPORTS = {"andura.css": css, "andura.ts": ts, "andura.py": py, "Andura.cs": cs}
+FONT_DIR = "../../render/fonts"  # relative to tokens/build/; scripts/render_hero.py downloads IBM Plex (OFL) there
+FONT_FILES = [("font-family-mono", "IBMPlexMono-Regular.ttf", "400", ""), ("font-family-mono", "IBMPlexMono-Medium.ttf", "500", " Medium"),
+              ("font-family-sans", "IBMPlexSans[wdth,wght].ttf", "400 500", "")]
+
+def fonts():
+    """@font-face rules: an installed local() face first, then the TTFs in render/fonts/. Override FONT_DIR for your app."""
+    fam = {name(p, "-"): scalar(v)[0].split(",")[0].strip('"') for p, v in TOKENS if p[:2] == ("font", "family")}
+    out = ["/* Generated from tokens/andura.tokens.json. IBM Plex is SIL OFL 1.1 and not bundled: run scripts/render_hero.py or put the",
+           "   TTFs in render/fonts/ (or edit FONT_DIR in scripts/export_tokens.py). */"]
+    for key, f, w, sfx in FONT_FILES:
+        out.append(f"@font-face {{ font-family: \"{fam[key]}\"; font-weight: {w}; font-display: swap; "
+                   f"src: local(\"{fam[key]}{sfx}\"), url(\"{FONT_DIR}/{f.replace('[', '%5B').replace(']', '%5D')}\") format(\"truetype\"); }}")
+    return "\n".join(out) + "\n"
+
+EXPORTS = {"andura.css": css, "andura-fonts.css": fonts, "andura.ts": ts, "andura.py": py, "Andura.cs": cs}
 
 if __name__ == "__main__":
     os.makedirs(f"{ROOT}/tokens/build", exist_ok=True)

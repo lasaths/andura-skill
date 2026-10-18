@@ -10,7 +10,7 @@
 |---|---|---|
 | `duration.instant` | 0 ms | reduced motion, keyboard navigation, camera cut |
 | `duration.fast` | 120 ms | peek in |
-| `duration.fast-out` | 80 ms | peek out, hold-ring reset |
+| `duration.fast-out` | 80 ms | peek out, hold-fill reset |
 | `duration.base` | 200 ms | state change, column and level cross-fade, toast in and out |
 | `duration.slow` | 400 ms | live to stale styling (noticeable, R §3.5) |
 | `duration.camera` | 300 ms | home, fit, standard views, user-triggered only |
@@ -20,8 +20,10 @@
 | `duration.peek-delay` / `long-press` | 300 / 500 ms | hover / touch before a peek |
 | `easing.out` | (0.2, 0, 0, 1) | everything that appears or leaves |
 | `easing.camera` | (0.4, 0, 0.2, 1) | camera |
-| `easing.linear` | (0, 0, 1, 1) | hold ring (progress must be honest) |
+| `easing.linear` | (0, 0, 1, 1) | hold fill opacity 0 → 1 (progress must be honest) |
 The P1 pulse uses a sine curve between opacity 1.0 and `pulse-min-opacity` 0.35.
+
+Every duration token is listed in `SKILL.md` rule 13; `toast`, `pulse`, `peek-delay` and `long-press` are component-only (toast, alarm band edge, peek).
 
 ## Behaviours
 | Motion | Spec |
@@ -38,7 +40,7 @@ The P1 pulse uses a sine curve between opacity 1.0 and `pulse-min-opacity` 0.35.
 | **Hover** | Only on devices with a hover-capable pointer |
 
 ## Reduced motion (platform setting)
-All fades become instant. The P1 pulse becomes a steady inverted chip (Emergency fill, Void text). The camera always cuts. The hold ring still fills, linearly, because it is the progress feedback.
+All fades become instant. The P1 pulse becomes a steady inverted chip (Emergency fill, Void text). The camera always cuts. The hold fill still goes from opacity 0 to 1, linearly, because it is the progress feedback.
 
 ## Forbidden
 Bounce, slide, scale-in, springs with overshoot, parallax, spinners, looping decoration, camera fly-throughs, animated or counting numbers, shake and colour cycling. **Photosensitivity:** never more than 3 flashes in any 1 s ([WCAG 2.3.1](https://www.w3.org/WAI/WCAG22/Understanding/three-flashes-or-below-threshold)). The 1 Hz pulse has soft edges and a small area, so it stays well under the limit.

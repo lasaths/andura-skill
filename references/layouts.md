@@ -26,15 +26,16 @@ Six generic layouts (L1–L6) for dark-UI 3D digital-twin dashboards in robotic 
 - Panels: Surface + 1 px Line hairline, no shadows, blur or gradients. Whitespace before lines.
 - E-stop is physical. The UI mirrors its state and never draws an E-STOP button.
 
-### 0.6 Drill-down levels (R §3.2, ISA-101 L1–L4)
+### 0.6 Drill-down levels D1–D4 (R §3.2, ISA-101 Level 1–4)
+**Naming:** `L1`–`L6` always mean the six layout patterns; the display hierarchy levels are `D1`–`D4`.
 | Level | Content | Typical layout |
 |---|---|---|
-| L1 Overview | site / hall: all cells, counts, throughput | L3 grid, large-display version of L1/L3 |
-| L2 Cell | one cell twin, current element, 3–4 key parameters | L1, L2 |
-| L3 Robot / element | joints, toolpath deviation, element record | L2 right pane, L1 inspector, L6 record |
-| L4 Diagnostics | logs, raw signals, procedures, rationale | L5 detail → "OPEN L4 LOG" |
+| D1 Overview | site / hall: all cells, counts, throughput | L3 grid, large-display version of L1/L3 |
+| D2 Cell | one cell twin, current element, 3–4 key parameters | L1, L2 |
+| D3 Robot / element | joints, toolpath deviation, element record | L2 right pane, L1 inspector, L6 record |
+| D4 Diagnostics | logs, raw signals, procedures, rationale | L5 detail → "OPEN D4 LOG" |
 - The breadcrumb in the h1 always shows the path. One click/key (`Esc` or `Home`) goes up one level. The overview is always one action away (R §3.2).
-- Each panel labels its level in the header meta ("L3 · ROBOT") [DC], so operators know how deep they are.
+- Each panel labels its level in the header meta ("D3 · ROBOT") [DC], so operators know how deep they are.
 
 ### 0.7 Motion
 See `motion.md` (locked tokens: 0 / 120 / 200 / 400 ms, P1 pulse 1 Hz until ack, ≤ 3 flashes/s, reduced motion = instant).
@@ -123,7 +124,7 @@ See `motion.md` (locked tokens: 0 / 120 / 200 / 400 ms, P1 pulse 1 Hz until ack,
 | Answer column | right column | right column, narrower | single column under the thumbnail, exceptions first |
 | L3 card grid | 3 × 2 | 3 × 2 | single stack: alarms, throughput, robots, then Materials / Design link as 64 px rows |
 | L4 chart | vertical bars | vertical bars, "−18" deltas | one 56 px row per day: bar, plan tick, value, delta |
-| L5 list + detail | list left, detail right | same; groups + 56 px rows | detail screen first (from band), "‹ ALL ALARMS · 6" back row, hold-to-ack |
+| L5 list + detail | list left, detail right | same; groups + 56 px rows | detail screen first (from band, "+n" or ALARMS tab): "‹ ALL ALARMS · n" back row, glyph + word + time, message `title`, value + LIMIT, cause/next step, PROCEDURE, then **HOLD TO ACKNOWLEDGE** (64 px full width, fill opacity 0 → 1 over 1500 ms, release cancels). No 3D thumbnail |
 | L6 matrix | elements × 4 stages | same, 136 × 56 cells | one 64 px row per element with only the stage that needs action; tap → 4-stage detail |
 | Lists / rows | 32 | 56 | 64 |
 | Hover peeks | hover 300 ms | long-press 500 ms | long-press 500 ms on the thumbnail only; values are already in rows |
@@ -140,6 +141,13 @@ At OS text size 125 / 150 / 200 % (`text-scale.*`):
 | Values and units | never truncate, wrap or clip; the value row wraps its LIMIT to the next line instead |
 | Targets | ≥ 56 × 56 px on touch classes, and on every class at 200 % |
 The persistent zones stay pixel-identical across states at any one step. `scripts/touch_check.py` checks all four steps on the worked example.
+
+### Alarm decisions (ISA-18.2 / ISA-101, 0.3.4)
+- **P2-only on phone:** the band row has a steady Caution edge, triangle glyph, `P2 CAUTION`, the message and "+n". The ALARMS badge shows a triangle with `P2 · n`.
+- **Badge:** the highest active priority (glyph + word) and the count of active P1 + P2 alarms, acknowledged or not. Its slot is reserved, so the tab label never moves.
+- **Cell summary:** `<highest priority> · <cell state>`, with cell state one of Running, Partly stopped, Stopped or Waiting (`P1 · Partly stopped`). A Muted line under it names the abnormal robots. With nothing active: just the state (`Running`), no glyph, no colour.
+- **LIMIT vs TARGET:** LIMIT is an alarm setpoint; crossing it raises a P1 or P2. TARGET is a plan value (for example cycle time); show it Muted as `TARGET 4:00 · DEV +0:12` and never in an alarm hue unless a LIMIT is also crossed.
+- **Dimming** (`opacity.dim`): routine values dim while any P1 is active, or any P2 is unacknowledged. An acknowledged P2 alone does not dim.
 
 ### Polish v1.1 (2026-10-18)
 - **Tablet 3D centred** (L1, L2): auto-fit uses the true floor extent (x−y centre at 2 units, x+y at 0–20 less robot height).

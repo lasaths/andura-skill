@@ -30,7 +30,7 @@ Sizes are given as desktop · tablet · phone. Touch targets are always ≥ 56 p
 | 9 | **Button · primary** | Ultramarine fill, label caps | default, hover, focus, pressed, disabled | 32 (40 in band) · 56 · 56 | `.btn.pri` |
 | 10 | **Button · secondary** | Line outline | default, hover, focus, pressed, disabled | 32 · 56 · 56 | `.btn` |
 | 11 | **Button · danger** | Emergency outline; active = confirm step in Emergency fill | default, hover, focus, confirm, disabled | 32 · 56 · 56; always 2-step | components.py |
-| 12 | **Hold-to-confirm** | Ultramarine bar · progress ring · fill grows over 1.5 s · release cancels | default, focus, active (40 % held), disabled | phone only, 64 h full width | `resp.hold` |
+| 12 | **Hold-to-confirm** | Ultramarine fill, opacity 0 → 1 over `motion.duration.hold` (1500 ms, linear), no width growth (hard rule 9) · release cancels (reset over `duration.fast-out`) | default, focus, active (40 % held), disabled | phone only, 64 h full width; lives on the alarm detail screen (`references/layouts.md` L5 phone), never in the band | `resp.hold` |
 | 13 | **Tooltip (peek)** | Black, 1 px Text outline, pointer notch, label · value/limit · time/age; 8 px above anchor | default, stale (age), alarm (over limit) | 192–320 w · same · long-press only | `tip` |
 | 14 | **Back control** | ‹ + destination name + ESC keycap (desktop) | default, hover (underline), focus, pressed | 56 hit all classes | `back` |
 | 15 | **3D selection + status overlay** | Ultramarine 2.5 px outline (selected) · status rim (P1/P2) inside · hover thin Text outline · stale dashed | all 7, incl. selected + alarm | k-scaled; outline constant 2.5 px | `common.robot` |

@@ -5,7 +5,7 @@ EXAMPLE = f"{ROOT}/examples/l1-alarm.html"
 CHROME = os.environ.get("CHROME") or next((b for b in ("google-chrome", "chromium", "chromium-browser") if shutil.which(b)), "google-chrome")
 BASE = [CHROME, "--headless=new", "--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--force-device-scale-factor=1"]
 CLASSES = {"desktop": (1600, 1000), "tablet": (1180, 820), "phone": (390, 844)}
-STATES = ("alarm", "normal", "inspect")
+STATES = ("alarm", "normal", "inspect", "detail")
 
 def url(path, state, scale=1):
     return f"file://{path}?state={state}&scale={scale}"
@@ -27,7 +27,8 @@ def _chrome_pad():
     return _PAD
 
 def dump(html_path, w, h, query=""):
-    """Load the page in an iframe of exactly w x h CSS px (headless windows cannot go below 500 px wide) and return the JSON
+    """Load the page in an iframe of exactly w x h CSS px (headless --dump-dom windows are at least 500 px wide, so a 390 px phone needs the iframe;
+    --screenshot honours --window-size and is unaffected) and return the JSON
     the page wrote into <pre id="R">."""
     wrap = f"/tmp/andura_wrap_{os.getpid()}.html"
     open(wrap, "w").write(f'<html><body style="margin:0"><iframe id=F src="file://{html_path}{query}" style="border:0;width:{w}px;height:{h}px"></iframe>'
@@ -40,3 +41,13 @@ def dump(html_path, w, h, query=""):
         os.remove(wrap)
     m = re.search(r'<pre id="R"[^>]*>(.*?)</pre>', out, re.S)
     return json.loads(m.group(1).replace("&quot;", '"').replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">"))
+
+def prepare(src, js, tag="pg"):
+    """Copy the page to /tmp with `js` injected before </body>. Every relative href/src (not only ../) is rewritten to an
+    absolute file:// URL so stylesheets, fonts and images still load; #fragment and ?query links stay as they are."""
+    base = os.path.dirname(os.path.abspath(src))
+    html = re.sub(r"""\b(href|src)=(["'])(?![a-zA-Z][a-zA-Z0-9+.-]*:|[#?/])([^"']+)\2""",
+                  lambda m: f'{m.group(1)}={m.group(2)}file://{os.path.normpath(os.path.join(base, m.group(3)))}{m.group(2)}', open(src).read())
+    tmp = f"/tmp/andura_{tag}_{os.getpid()}.html"
+    open(tmp, "w").write(html.replace("</body>", js + "</body>") if "</body>" in html else html + js)
+    return tmp

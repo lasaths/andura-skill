@@ -3,7 +3,7 @@
 Suggest a library, then adapt it to ANDURA. The tokens (`tokens/andura.tokens.json` and its exports) stay the source of truth; the library supplies behaviour and accessibility, never the look.
 
 ## 1. Workflow
-1. **Detect the stack** from the project: `package.json` (React, Vue, Svelte, plain web), `*.csproj` (WPF, Avalonia, MAUI), `pyproject.toml` / `requirements.txt` (PySide6, Dash), Unity `Packages/manifest.json`. Ask only if nothing is found.
+1. **Detect the stack** from the project: `package.json` (React, Vue, Svelte, plain web), `*.csproj` (WPF, Avalonia, MAUI), `pyproject.toml` / `requirements.txt` (PySide6, Dash), Unity `Packages/manifest.json`. With no project, default to React Aria (touch and press handling) or Radix (smallest footprint); do not ask.
 2. **Suggest 1–2 options** from §2 with a one-line reason each (headless vs themed, licence, what the project already uses). Prefer a library already in the project.
 3. **Map tokens:** load the matching export (`andura.css`, `andura.ts`, `andura.py`, `Andura.cs`) and bind the library's theme variables to it. Never type a colour, size or duration literal. See `references/platforms.md`.
 4. **Override defaults** with the checklist in §4.

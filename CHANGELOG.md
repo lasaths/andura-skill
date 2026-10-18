@@ -4,6 +4,26 @@ ANDURA uses semantic versioning. The version lives in `tokens/andura.tokens.json
 
 **Breaking change** (bump the major version; while in `0.x`, bump the minor): a changed or removed token value or name, a renamed or renumbered rule (hard rules 1–10, rules 1–13), a changed breakpoint or chrome size, or a removed reference file. Adding tokens, references, checks or examples is not breaking.
 
+## [0.3.4-draft] - 2026-10-18
+Fixes from a second fresh-agent test.
+- Example `?state=detail`: alarm detail with acknowledge per hard rule 8 (confirm dialog with focus on CANCEL on desktop/tablet, also from the band ACKNOWLEDGE; 1500 ms hold with opacity fill on phone). Specified in `l1-alarm.md`, `layouts.md` (L5 phone) and `components.md` #12.
+- 3D strokes keep a constant on-screen width (new rule in §3); the example uses non-scaling strokes and `--k` for the selection outline. `touch_check.py` fails any `.o3d` stroke under 2 px on screen.
+- `touch_check.py` scrolls each target into view instead of skipping it and rewrites every relative href/src (shared `prepare()` in `_chrome.py`). `persist_check.py` masks only the exact `[aria-current]` and `.badge` rects from the DOM. `check.py --example` flags hand-typed px/ms (with the matching token, if any) and accepts an inlined andura.css. New self-tests for each (27 check.py cases; 2 new touch, 1 new persist).
+- Naming: layout patterns stay `L1`–`L6`; display hierarchy levels are now `D1`–`D4`.
+- Labels write `PATH DEV` (hard rule 4). New token `size.content-top` (176).
+- Alarm decisions documented: P2-only phone band and badge, badge = highest priority + count with a reserved slot, cell summary pattern, LIMIT vs TARGET, dimming while a P1 is active or a P2 is unacknowledged.
+- Example: ALARMS badge slot reserved (the label no longer shifts when an alarm appears; `persist_check.py` caught it).
+
+## [0.3.3-draft] - 2026-10-18
+Fixes from a cold fresh-agent test.
+- Scripts take a target: `touch_check.py page.html [--classes] [--states] [--scales]`, `persist_check.py page.html [--classes] [--states]` (a state the page lacks is SKIP, not PASS), `check.py --example page.html`. Page contract (`?state=`, `?scale=`, `.hit`, `.trunc`, `.value`) documented in `examples/l1-alarm.md`.
+- `check_example`: hex inside `style=""` or before any quote is now caught; andura.css must be loaded by a real `<link rel=stylesheet>` or `@import`. Three new self-tests (23 cases). `touch_check.py` also fails on more than 6 distinct font sizes.
+- New tokens: `size.glyph`, `size.spark-h`, `size.column.desktop|tablet`, `size.stroke-rim`, `opacity.dim`, `opacity.scrim`, `type.label.tracking`. The example has no size/opacity literals left (bar geometry aside).
+- New export `tokens/build/andura-fonts.css` (`@font-face` for IBM Plex, `local()` then `render/fonts/`); documented in `platforms.md` and the workflow.
+- `SKILL.md`: hard rule 2 covers badges and cell summaries; hard rule 3 allows phone +n and defines the ALARMS badge; hard rule 7 treats touch displays as tablet; rule 4 lists what doesn't count; rule 8 end dot never in an alarm hue; rule 13 lists every duration token; §3 dialog and scrim; §4 at most 6 distinct type tokens and hero-unit rule; workflow loads fonts and renders named classes plus checked ones.
+- `components.md` #12 hold-to-confirm: fill opacity 0 → 1 over `motion.duration.hold`, no width growth (hard rule 9). `libraries.md`: default to React Aria or Radix with no project.
+- Example: cell summary "P1 · Partly stopped"; ALARMS badge `P1 · 2` only while an alarm is active; tab bar active state is a 2 px border-top; path deviation uses value-m (6 type tokens).
+
 ## [0.3.2-draft] - 2026-10-18
 - New `references/libraries.md`: pick a component library per platform and adapt it to the tokens (workflow, pick list, criteria, override checklist, mapping, gate).
 - README cut to a short human overview; depth lives in `SKILL.md` and `references/`.

@@ -1,7 +1,8 @@
 """ANDURA verification. Run from anywhere: python3 scripts/check.py
 Source of truth: tokens/andura.tokens.json. Checks SKILL.md, references/*.md, assets/pal-v2.2.json and
 tokens/build/* against it, scans for banned values, then runs a self-test that injects one violation per
-check and confirms it fails. Exit code 0 = all pass; 1 = failures (each printed)."""
+check and confirms it fails. `--example path.html` checks only that page (token-only colour, andura.css loaded).
+Exit code 0 = all pass; 1 = failures (each printed)."""
 import glob, json, os, re, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, f"{ROOT}/scripts")
@@ -145,14 +146,43 @@ def check_bans(name, text):
     return e
 
 CSS = open(f"{ROOT}/tokens/build/andura.css").read()
+LINK = re.compile(r"""<link\b(?=[^>]*\brel=["']?stylesheet)[^>]*\bhref=["'][^"']*andura\.css["'][^>]*>|@import\s+(?:url\()?["'][^"']*andura\.css["']""")
+
+BP = {px(v) + d for v in TOK["breakpoint"].values() if isinstance(v, dict) and "$value" in v for d in (0, -1)}
+TOKVAL = {}
+for _p, _v in ex.TOKENS:
+    _x, _u = ex.scalar(_v)
+    if _u in ("px", "ms"): TOKVAL.setdefault(f"{_x:g}{_u}" if isinstance(_x, (int, float)) else "", f"--andura-{ex.name(_p, '-')}")
+
+def inlined(code):
+    """<style> blocks that are an inlined copy of andura.css (marker comment 'andura.css' or 10+ --andura-* definitions)."""
+    return [b for b in re.findall(r"<style\b[^>]*>.*?</style>", code, re.S)
+            if re.search(r"/\*[^*]*andura\.css", b) or len(re.findall(r"--andura-[\w-]+\s*:", b)) >= 10]
+
 def check_example(name, t):
-    """An example may use colours only through var(--andura-*) tokens that exist, and must load andura.css."""
+    """An example may use colours, sizes and durations only through var(--andura-*) tokens that exist, and must load
+    andura.css with a real <link rel=stylesheet>, an @import, or an inlined copy (self-contained page). Allowed literals:
+    0/1 px, 0 ms, breakpoint values in @media, and anything inside <svg> (3D/scene geometry)."""
     e = []
-    for bad in re.findall(r"#[0-9A-Fa-f]{3,8}\b(?![^<]*\")|rgba?\(|hsla?\(", re.sub(r'href="[^"]*"', "", t)):
+    blocks = inlined(t)
+    own = set(re.findall(r"(--andura-[\w-]+)\s*:", "".join(blocks)))
+    for b in blocks: t = t.replace(b, "")
+    code = re.sub(r"<!--.*?-->", "", t, flags=re.S)
+    for bad in re.findall(r"(?<![&\w])#[0-9A-Fa-f]{3,8}\b|rgba?\(|hsla?\(", re.sub(r"""\bhref=["'][^"']*["']""", "", code)):
         e.append(f"{name}: literal colour {bad}; use var(--andura-color-*)")
-    for v in set(re.findall(r"var\((--andura-[a-zA-Z0-9-]+)\)", t)):
-        if v + ":" not in CSS: e.append(f"{name}: unknown token {v}")
-    if "andura.css" not in t: e.append(f"{name} does not load tokens/build/andura.css")
+    for v in set(re.findall(r"var\((--andura-[a-zA-Z0-9-]+)\)", code)):
+        if v + ":" not in CSS and v not in own: e.append(f"{name}: unknown token {v}")
+    if not LINK.search(code) and not blocks: e.append(f"{name} does not load tokens/build/andura.css")
+    nosvg = re.sub(r"<svg\b.*?</svg>", "", code, flags=re.S)
+    css = "\n".join(re.findall(r"<style\b[^>]*>(.*?)</style>", nosvg, re.S) + re.findall(r'style="([^"]*)"', nosvg))
+    for q in re.findall(r"@media[^{]*", css):
+        e += [f"{name}: @media {n}px is not a breakpoint token" for n in re.findall(r"(\d+)px", q) if int(n) not in BP]
+    css = re.sub(r"@media[^{]*", "", re.sub(r"/\*.*?\*/", "", css, flags=re.S))
+    for n, u in re.findall(r"(?<![\w.#-])(\d+(?:\.\d+)?)(px|ms)\b", css):
+        lit = f"{float(n):g}{u}"
+        if lit in ("0px", "1px", "0ms"): continue
+        tok = TOKVAL.get(lit)
+        e.append(f"{name}: hand-typed {lit}" + (f"; use var({tok})" if tok else "; not a token value"))
     return e
 
 def check_data():
@@ -202,15 +232,30 @@ def selftest(S, R):
     ex_html = open(f"{ROOT}/examples/l1-alarm.html").read()
     for n, bad in {"example hex": ex_html.replace("</style>", ".x{color:#3A3CFF}</style>", 1),
                    "example rgb": ex_html.replace("</style>", ".x{color:rgb(0,0,0)}</style>", 1),
-                   "example unknown token": ex_html.replace("</style>", ".x{color:var(--andura-color-pink)}</style>", 1)}.items():
+                   "example unknown token": ex_html.replace("</style>", ".x{color:var(--andura-color-pink)}</style>", 1),
+                   "example hex in style attr": ex_html.replace("<body", '<body style="color:#3A3CFF"', 1),
+                   "example hex before quote": ex_html.replace("<body", '<body data-x="a" title="#3A3CFF"', 1),
+                   "example no stylesheet link": re.sub(r'<link rel="stylesheet" href="[^"]*andura\.css">', "<!-- andura.css -->", ex_html),
+                   "example hand-typed px": ex_html.replace("</style>", ".x{width:57px}</style>", 1),
+                   "example px equal to a token": ex_html.replace("</style>", ".x{height:56px}</style>", 1),
+                   "example hand-typed ms": ex_html.replace("</style>", ".x{transition:opacity 200ms}</style>", 1),
+                   "example raw hex outside the inlined block": re.sub(r'<link rel="stylesheet" href="[^"]*andura\.css">', lambda m: "<style>" + CSS + "</style>", ex_html).replace("</body>", '<i style="color:#3A3CFF"></i></body>')}.items():
         # run() does not read examples; map "check_example flagged it" onto a case run() flags.
         cases[n] = (S + "\nΔ", R) if check_example("l1-alarm.html", bad) else (S, R)
     allowed = [S + "\nhover 300 ms, peek 300 / 500 ms, Lighting soft.\n", R]
+    # a self-contained page with andura.css inlined (raw hexes and px inside that block) must pass
+    selfcontained = re.sub(r'<link rel="stylesheet" href="[^"]*andura\.css">', lambda m: "<style>/* andura.css */\n" + CSS + "</style>", ex_html)
+    if check_example("inline", selfcontained): allowed[0] += "\nΔ"
     e = [f"self-test: '{n}' was not detected" for n, (s, r) in cases.items() if not run(s, r)]
     if run(*allowed): e.append(f"self-test: allowed text flagged: {run(*allowed)}")
     return e, len(cases) + 1
 
 if __name__ == "__main__":
+    if "--example" in sys.argv:  # check one screen of your own: python3 scripts/check.py --example path.html
+        f = sys.argv[sys.argv.index("--example") + 1]
+        errs = check_example(os.path.basename(f), open(f).read())
+        print(f"{'PASS' if not errs else 'FAIL'}  example {f}"); [print("   ", x) for x in errs]
+        sys.exit(1 if errs else 0)
     S = open(f"{ROOT}/SKILL.md").read()
     R = {os.path.basename(p): open(p).read() for p in sorted(glob.glob(f"{ROOT}/references/*.md"))}
     groups = [("SKILL.md vs tokens", check_skill(S)), ("references vs tokens", check_refs(R)),

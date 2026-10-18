@@ -1,7 +1,7 @@
 ---
 name: andura
 description: Use when designing, building or reviewing dark-mode operator UI for mission-critical 3D digital twins - HMI and SCADA screens, operator consoles, alarm screens, robot cell monitoring, BIM/digital-twin viewers, design-to-fabrication tracking and production analytics - on desktop, tablet, phone or control-room wall, on any platform (web, desktop, mobile, Unity, Three.js). Not for consumer apps, light themes or marketing pages.
-version: 0.3.2-draft
+version: 0.3.4-draft
 license: MIT
 allowed-tools: [Read, Write, Edit, Glob, Grep, Shell]
 ---
@@ -18,12 +18,12 @@ Units: **px** means device-independent pixels (CSS px, Android dp, iOS pt, WPF D
 ## 1. Hard rules
 Break none of these. If a request conflicts with one, refuse that part and say which rule blocks it.
 1. **Use colour only for abnormal states.** Draw normal states in Muted and Text. Show Emergency and Caution only while their condition is active. Never show green "OK" on an overview.
-2. **Give every status a colour, a glyph and a word.** P1 = octagon `!` EMERGENCY. P2 = triangle `!` CAUTION. P3 = circle `i` ADVISORY. Stale = dashed circle STALE.
-3. **Never hide a status.** Selection, occlusion, LOD, tooltips and staleness must not cover it. For a selected object in alarm, draw the Ultramarine outline outside and the status rim inside.
-4. **Pair every live value with its unit and its limit.** Show data age once per stream in the top line, and next to a value only when it is stale. Write deviation as `DEV`. Never use the Greek delta (Plex Mono has no glyph for it).
-5. **Use locked tokens only:** palette v2.2, IBM Plex Sans and Mono, weights 400 and 500, at most 6 type sizes per screen class.
+2. **Give every status a colour, a glyph and a word.** P1 = octagon `!` EMERGENCY. P2 = triangle `!` CAUTION. P3 = circle `i` ADVISORY. Stale = dashed circle STALE. This includes glyph badges and cell summaries (e.g. `P1 · Partly stopped`).
+3. **Never hide a status.** Selection, occlusion, LOD, tooltips and staleness must not cover it. For a selected object in alarm, draw the Ultramarine outline outside and the status rim inside. Phone "+n" is allowed; the ALARMS tab badge shows the highest priority plus the count (`P1 · 2`).
+4. **Pair every live value with its unit and its limit.** Show data age once per stream in the top line, and next to a value only when it is stale. Write deviation as `DEV` in labels too (`PATH DEV`), never spelled out. Never use the Greek delta (Plex Mono has no glyph for it).
+5. **Use locked tokens only:** palette v2.2, IBM Plex Sans and Mono, weights 400 and 500, at most 6 distinct type tokens per screen class.
 6. **Keep the persistent zones fixed.** The top line, the alarm band and the footer or tab bar are pixel-identical across states and layouts.
-7. **Make every touch target at least 56 × 56 px, 8 px apart,** on every touch screen. Keep all text at 12 px or larger.
+7. **Make every touch target at least 56 × 56 px, 8 px apart,** on every touch screen. Keep all text at 12 px or larger. Desktop is pointer-first; treat any touch-capable display as tablet.
 8. **Never send a robot command from a navigation gesture.** Commands (pause, resume, acknowledge, reset) live only in labelled buttons. On desktop and tablet, every command needs a confirm step. On phone, every command needs a 1500 ms press-and-hold.
 9. **Animate opacity only, and only to carry meaning.** The only loop is the P1 pulse (1 Hz), and it stops on acknowledge. Never exceed 3 flashes per second.
 10. **Treat the E-stop as physical only.** Show its state. Never draw a software E-STOP button.
@@ -34,16 +34,16 @@ Break none of these. If a request conflicts with one, refuse that part and say w
 1. **One question per view.** Write the question at the top of the spec. Move anything that does not answer it down a level.
 2. **Grey when normal, colour when abnormal.** In normal state, use at most one accent: the commanded path.
 3. **Hide normal, annunciate the exception.** No RUNNING chips, zero counts or empty alarm glyphs.
-4. **Keep to the budget.** At most 5 numeric values and 1 display-size value per screen. At most 3 value callouts in 3D (1 in normal state).
+4. **Keep to the budget.** At most 5 numeric values and 1 display-size value per screen. At most 3 value callouts in 3D (1 in normal state). Limits, DEV, units, clock, data age and alarm-band text do not count.
 5. **Show deviation against a limit, not raw readings.** `0.42 mm … LIMIT 0.50 mm`, `ETA 10:21 · +2 min`. Collapse in-range parameters into "others in range".
 6. **Use whitespace before lines and lines before boxes.** No panel frames on overviews. Keep groups at least 32 px apart.
 7. **Label a value only when it is ambiguous.** Units are Muted.
-8. **Show trends as sparklines.** Frameless, one dashed limit line, value-to-limit scale, end dot.
+8. **Show trends as sparklines.** Frameless, one dashed limit line, value-to-limit scale, end dot. The end dot never uses an alarm hue; the value text carries the alarm.
 9. **Disclose progressively, with obvious exits.** Peek, inspect and drill are each one action away, with a named back control.
 10. **Keep one fixed zone for always-on facts.** The top line holds identity, control owner, data age and clock. Nothing else.
 11. **Never hide a status** (hard rule 3), in 2D and 3D. Draw occluded alarmed objects as an x-ray outline and off-screen alarms as an edge chip.
 12. **An alarm shifts the hierarchy, never the layout.** The alarm goes to the band and the 3D rim. Routine values dim to 55 % opacity. Nothing moves. The camera moves only on a user action.
-13. **Motion means something.** Opacity fades only (0 / 120 / 200 / 400 ms, camera 300 ms, hold 1500 ms). See `references/motion.md`.
+13. **Motion means something.** Opacity fades only. `motion.duration.*`: instant 0 ms, fast 120 ms, fast-out 80 ms, base 200 ms, slow 400 ms, camera 300 ms, hold 1500 ms, toast 4000 ms, pulse 1000 ms, peek-delay 300 ms, long-press 500 ms. See `references/motion.md`.
 
 When two rules conflict, the lower-numbered hard rule wins, then the lower-numbered rule. Sources and audits: `references/principles.md`, `references/research.md`.
 
@@ -66,8 +66,9 @@ When two rules conflict, the lower-numbered hard rule wins, then the lower-numbe
 | Nominal | `#44B782` | explicit confirmation on detail levels only | 8.34 / 7.87 |
 | Data scale (cividis) | `#163770 #47516C #696B71 #8B8778 #AFA471 #D7C45C #FEE838` | magnitudes only (heatmaps, abs DEV) | — |
 
+- **Dialog:** Surface fill + 1 px Line border; scrim Void at `opacity.scrim` (0.6). Dimmed routine values: `opacity.dim` (0.55).
 - **Focus ring:** 2 px Text, 2 px gap outside the target. Never use Ultramarine for focus.
-- **Strokes:** accent strokes 2 px minimum. 3D selection outline 2.5 px. Commanded path dashed 3 px.
+- **Strokes:** accent strokes 2 px minimum. 3D selection outline 2.5 px. Commanded path dashed 3 px. 3D outlines, rims and paths keep a constant on-screen width at any zoom or thumbnail scale (SVG `vector-effect: non-scaling-stroke`, screen-space lines in engines), never under 2 px.
 - Put colour on the value or the glyph, never on a row background. Never use alarm hues for data, decoration or brand.
 - 3D model greys: `color.3d.*` tokens. Depth: `references/colour.md`.
 
@@ -85,7 +86,8 @@ When two rules conflict, the lower-numbered hard rule wins, then the lower-numbe
 | label | Mono 500 CAPS +0.08em | Muted | 12/16 | 13/16 | 12/16 | 56/64 |
 
 - Set numbers, IDs and labels in Mono with tabular figures and slashed zero. Set text in Sans.
-- Use one h1 (Muted) and one display value per screen, and one title per panel.
+- Use one h1 (Muted) and one display value per screen, and one title per panel. A hero unit uses value-m; with no hero, units take the size of their value's row (body).
+- At most 6 distinct type tokens per screen class (`touch_check.py` counts sizes).
 - Values must outrank headings when the screen is blurred. If a heading outweighs a value, shrink the heading.
 - Depth: `references/typography.md`.
 
@@ -106,7 +108,9 @@ When two rules conflict, the lower-numbered hard rule wins, then the lower-numbe
 - **Alarm band:** one row per active P1 or P2, acknowledged or not, P1 on top, at most 2 rows. Put extras into "+n". The band appears while any P1 or P2 is active and disappears when none is. Its space belongs to the content area, so nothing else moves. A P1 row has an Emergency edge bar (pulsing until acknowledged), glyph, word, message (`412 N, limit 380 N`), time, PROCEDURE and ACKNOWLEDGE.
 - **Footer:** ROBOT DETAIL › · TIMELINE › · ALARM LOG › · DIAGNOSTICS › in fixed slots, then E-STOP: PHYSICAL ONLY. The active link is Text with a 2 px underline and keeps its ›. **Phone:** tab bar CELL · ROBOTS · ALARMS (P1 badge) · MORE.
 
-**Six layout patterns** (pick one by the question): L1 3D dominant · L2 split · L3 card grid · L4 analytics · L5 alarm list · L6 design-to-fab. Questions and shapes: `references/layouts.md`.
+**Six layout patterns** (`L1`–`L6`; hierarchy levels are `D1`–`D4`, ISA-101) (pick one by the question): L1 3D dominant · L2 split · L3 card grid · L4 analytics · L5 alarm list · L6 design-to-fab. Questions and shapes: `references/layouts.md`.
+
+**Alarm decisions** (`references/layouts.md`): the ALARMS badge shows the highest priority + count (`P2 · 1` when only a P2 is active); cell summary `<priority> · <state>`; LIMIT is an alarm setpoint, TARGET a Muted plan value with DEV; dim routine values while a P1 is active or a P2 is unacknowledged. Phone acknowledge lives on the alarm detail screen as a 1500 ms hold.
 
 **Reflow to phone:** `references/layouts.md` (Reflow rules), `assets/responsive-sheet.png`.
 
@@ -116,21 +120,21 @@ When two rules conflict, the lower-numbered hard rule wins, then the lower-numbe
 
 ## 6. Workflow
 1. State the one question for the view and pick the layout pattern (§5).
-2. Copy the persistent zones (top line, band, footer) from `examples/l1-alarm.html` unchanged.
+2. Copy the persistent zones (top line, band, footer) from `examples/l1-alarm.html` unchanged. Load `tokens/build/andura.css` and `andura-fonts.css` (IBM Plex, see `references/platforms.md`).
 3. Place the answer: one display value, at most 5 values, each with a limit.
 4. Add exceptions in colour, glyph and word. Check rule 11.
 5. Define peek, inspect and drill, and the back path (`references/interaction.md`).
-6. Render desktop, tablet and phone in the alarm scenario. Then run §7.
+6. Render desktop, tablet and phone in the alarm scenario. If the user names classes, render those plus any the checks cover. Then run §7.
 
 ---
 
 ## 7. Verify before you ship
 Run from the repo root. Each script exits 0 only if every check passes, and prints each failure.
 - `python3 scripts/check.py`: this file, the references and the exports match `tokens/andura.tokens.json`; contrast figures match the WCAG ratio of the token hexes; no banned or superseded value (thin weights, Sans at weight 600, old surfaces, an Ultramarine Text focus ring, old 40 px chrome, the Greek delta, a hex that is not a token); versions agree. Includes a self-test.
-- `python3 scripts/touch_check.py`: every class (desktop, tablet, phone) × state (alarm, normal, inspect) × text scale (100–200 %). Targets 56 × 56 px or larger on touch classes and on every class at 200 %; no overlapping targets or text; no clipped text and no truncated value; no text below 12 px; no unmarked interactive element.
-- `python3 scripts/persist_check.py`: on every class the top line and footer (phone: tab bar) are pixel-identical between normal and alarm, and between normal and inspect apart from the active slot.
+- `python3 scripts/touch_check.py`: every class (desktop, tablet, phone) × state (alarm, normal, inspect, detail) × text scale (100–200 %). Targets 56 × 56 px or larger on touch classes and on every class at 200 %; no overlapping targets or text; no clipped text and no truncated value; no text below 12 px; no unmarked interactive element; targets in scroll areas are scrolled into view and measured.
+- `python3 scripts/persist_check.py`: on every class the top line and footer (phone: tab bar) are pixel-identical between normal and alarm, and between normal and inspect or detail apart from the exact active-slot and badge elements.
 
-To check your own screen, point the two render checks at it with the same `.hit` class convention (see `examples/l1-alarm.md`). Then check by hand:
+To check your own screen: `check.py --example page.html`, `touch_check.py page.html [--classes …] [--states …]` (also: 3D `.o3d` outlines ≥ 2 px on screen), `persist_check.py page.html` (states the page lacks are reported SKIP; it masks only `[aria-current]` and `.badge`). A self-contained page may inline `andura.css` (marker comment `/* andura.css */`). The page must use the `.hit` convention and the `?state=` / `?scale=` contract in `examples/l1-alarm.md`. Then check by hand:
 - [ ] **5-second test:** a naive viewer states the cell status and the active task after 5 s.
 - [ ] **Colour, glyph and word** on every status. Nominal green absent from overviews.
 - [ ] **No hidden status** under selection, tooltip, occlusion, off-screen position or LOD.

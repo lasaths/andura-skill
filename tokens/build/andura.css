@@ -173,6 +173,7 @@
   --andura-type-label-wall-fontSize: 56px;
   --andura-type-label-wall-lineHeight: 1.1428571428571428;
   --andura-type-label-wall-letterSpacing: 0.08em;
+  --andura-type-label-tracking: 0.08em;
   --andura-space-4: 4px;
   --andura-space-8: 8px;
   --andura-space-16: 16px;
@@ -212,6 +213,12 @@
   --andura-size-button-band: 40px;
   --andura-size-home-zone: 16px;
   --andura-size-thumb-3d-phone: 176px;
+  --andura-size-glyph: 16px;
+  --andura-size-spark-h: 32px;
+  --andura-size-column-desktop: 400px;
+  --andura-size-column-tablet: 444px;
+  --andura-size-stroke-rim: 2.5px;
+  --andura-size-content-top: 176px;
   --andura-breakpoint-phone: 0px;
   --andura-breakpoint-tablet: 600px;
   --andura-breakpoint-desktop: 1280px;
@@ -236,4 +243,6 @@
   --andura-text-scale-125: 1.25;
   --andura-text-scale-150: 1.5;
   --andura-text-scale-200: 2;
+  --andura-opacity-dim: 0.55;
+  --andura-opacity-scrim: 0.6;
 }
